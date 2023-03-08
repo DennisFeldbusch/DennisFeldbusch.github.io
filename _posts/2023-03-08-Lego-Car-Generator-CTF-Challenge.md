@@ -1,5 +1,5 @@
 ---
-title: Legto Car Generator CTF Challenge
+title: Lego Car Generator CTF Challenge
 published: true
 tags: ctf reversing reverse engineering assembly xor registers
 ---
@@ -14,6 +14,7 @@ tags: ctf reversing reverse engineering assembly xor registers
 * By inspecting the binary with `objdump -d encrypter > encrypter.s` and inspecting with [IDA](https://hex-rays.com/ida-free/) you can see at address 0x12BD the current char is XORed with the appropriate byte of the "hash"
 * every 4th time (see. address 0x12D2 -> modulo) the "hash" is newly calculated which is within the rngNext32 function
 * because of the given start of the flag `ractf{` and the given secret I calculated the then called start by XORing them:
+
 ```
 ractf{ => 72 61 63 74 66 7b
 secret => b6 4a 9e 78 de 86
@@ -24,6 +25,7 @@ start  => C4 2B FD 0C B8 FD
 * Because the start is only 4 Bytes (see. EAX vs. RAX<sup>[1](#registers)</sup>) I only need the first four Bytes
 
 * with these information I created a little c-tool which give me the flag
+
 ```c
 #include <stdio.h>
 
