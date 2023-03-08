@@ -59,6 +59,7 @@ int main() {
 
 # Lessons learned
 1. In x86 are multiple types to specify the size of a register<sup>[1](#registers)</sup>:
+
 ```
   ================ rax (64 bits)
           ======== eax (32 bits)
@@ -66,6 +67,7 @@ int main() {
               ==    ah (8 bits)
                 ==  al (8 bits)
 ```
+
 2. x86 Assembly instructions<sup>[2](#instructionreference)</sup>
 
 3. Debugging assembly with GDB and GEF <sup>[3](#gdbgef)</sup>
