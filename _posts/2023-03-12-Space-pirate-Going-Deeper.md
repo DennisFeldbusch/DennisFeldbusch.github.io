@@ -16,7 +16,7 @@ tags: [htb ctf challenge bof buffer overflow pwn checksec little endian stack]
 checksec --file=sp_going_deeper
 ```
 
-![[../assets/checksec.png]]
+![Checksec](../assets/checksec.png "Checksec Result")
 
 - by inspecting the result of checksec we can see that 
 1. the stack is not executable -> NX enabled
@@ -35,7 +35,7 @@ checksec --file=sp_going_deeper
 
 - the goal is to access this part of the `admin_panel` function which prints out the flag file
 
- ![[../assets/goal.png]]
+ ![Goal function](../assets/goal.png "goal function")
 
 ## requirements
 
@@ -43,13 +43,13 @@ checksec --file=sp_going_deeper
 2. input any `username`or `input` (depends on the previously selected option)
 3. the following three screenshots are showing checks to validate if particular memory segments are equal to the hexvalues: `0xdeadbeef`, `0x1337c0de` and `0x1337beef`
 
-![[../assets/deadbeef.png]]
-![[../assets/1337c0de.png]]
-![[../assets/1337beef.png]]
+![deadbeef check](../assets/deadbeef.png "deadbeef")
+![1337c0de check](../assets/1337c0de.png "1337c0de")
+![1337beef check](../assets/1337beef.png "1337beef")
 
 4. finally this check has to be passed
 
-![[../assets/string-cmp.png]]
+![string compare](../assets/string-cmp.png "string compare")
 
 ## limitations
 
