@@ -60,9 +60,9 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 - by checking the `flag` function we have to pass three checks in order to simulate the envionment on the server and print the flag
 
-1. there have to be a file called `flag.txt` ![file existence](youknow-file-existence.png)
-2. `$rbp+0x8` has to be equal to `0xdeadbeef`![deadbeef check](youknow-deadbeef-check.png)
-3. `$rbp+0xc` has to be equal to `0xc0ded00d`![c0ded00d check](youknow-c0ded00d-check.png)
+1. there have to be a file called `flag.txt` ![file existence](../assets/youknow-file-existence.png)
+2. `$rbp+0x8` has to be equal to `0xdeadbeef`![deadbeef check](../assets/youknow-deadbeef-check.png)
+3. `$rbp+0xc` has to be equal to `0xc0ded00d`![c0ded00d check](../assets/youknow-c0ded00d-check.png)
 
 - luckily we can manipulate `$rbp+0x8` and `$rbp+0xc` by extending the input: 
 ```bash
