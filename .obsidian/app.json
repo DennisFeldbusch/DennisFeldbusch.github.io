@@ -1,5 +1,6 @@
 {
   "vimMode": true,
   "attachmentFolderPath": "assets",
-  "useMarkdownLinks": true
+  "useMarkdownLinks": true,
+  "alwaysUpdateLinks": true
 }
