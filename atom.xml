@@ -22,7 +22,7 @@
 &lt;h2 id=&quot;trying-a-large-input-to-cause-an-overflow&quot;&gt;trying a large input to cause an overflow&lt;/h2&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;by executing the binary with a large input delivers us a segmentation fault&lt;/li&gt;
+  &lt;li&gt;By executing the binary with a large input delivers us a segmentation fault&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;python2 &lt;span class=&quot;nt&quot;&gt;-c&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;print &apos;A&apos; * 300 &quot;&lt;/span&gt; | ./vuln
