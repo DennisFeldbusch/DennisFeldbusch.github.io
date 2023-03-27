@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="generator" content="Jekyll">
+
+  <title>Space Pirate Going Deeper HackTheBox Challenge</title>
+
+  <link rel="stylesheet" href="/css/main.css">
+  
+  <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="ATOM Feed" /> <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Space Pirate Going Deeper HackTheBox Challenge | Dennis Blog</title>
+<meta name="generator" content="Jekyll v4.3.2" />
+<meta property="og:title" content="Space Pirate Going Deeper HackTheBox Challenge" />
+<meta name="author" content="Dennis" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Space Pirate: Going Deeper" />
+<meta property="og:description" content="Space Pirate: Going Deeper" />
+<meta property="og:site_name" content="Dennis Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-03-12T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Space Pirate Going Deeper HackTheBox Challenge" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dennis","url":"https://www.github.com/DennisFeldbusch"},"dateModified":"2023-03-12T00:00:00+00:00","datePublished":"2023-03-12T00:00:00+00:00","description":"Space Pirate: Going Deeper","headline":"Space Pirate Going Deeper HackTheBox Challenge","mainEntityOfPage":{"@type":"WebPage","@id":"/Space-pirate-Going-Deeper"},"url":"/Space-pirate-Going-Deeper"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+<body>
+  <div id="wrapper">
+    <header>
+  <div>
+    <a href="/">
+    
+    <h1>dennis@home:~$</h1>
+    </a>
+    <div class="header-links">
+      <a href="/archive"><h2 class="header-link">Archive</h2></a>
+<a href="/about"><h2 class="header-link">About</h2></a>
+<a href="/atom.xml"><h2 class="header-link">RSS</h2></a>
+<!-- HTML search field -->
+<div id="search-container">
+<input type="text" id="search-input" placeholder="Type your search here...">
+<ul id="results-container"></ul>
+</div>
+
+<!-- Grab search-script.js -->
+<script src="/assets/js/search-script.js" type="text/javascript"></script>
+
+<!-- Configuration -->
+<script>
+SimpleJekyllSearch({
+  searchInput: document.getElementById('search-input'),
+  resultsContainer: document.getElementById('results-container'),
+  json: '/search.json',
+  searchResultTemplate: '<li><a href="{url}">{title}</a><br><span class="post-meta">{date}</span></li>'
+})
+</script>
+
+
+    </div>
+  </div>
+</header>
+    <div class="container">
+      <section id="main_content">
+        <article>
+  <h2>Space Pirate Going Deeper HackTheBox Challenge</h2>
+  <time datetime="2023-03-12T00:00:00+00:00" class="by-line">12 Mar 2023</time>
+  <h1 id="space-pirate-going-deeper">Space Pirate: Going Deeper</h1>
+
+<blockquote>
+  <p>We are inside D12! We bypassed the scanning system, and now we are right in front of the Admin Panel. The problem is that there are some safety mechanisms enabled so that not everyone can access the admin panel and become the user right below Draeger. Only a few of his intergalactic team members have access there, and they are the mutants that Draeger trusts. Can you disable the mechanisms and take control of the Admin Panel?</p>
+</blockquote>
+
+<h2 id="inspecting-the-exec-file">inspecting the exec file</h2>
+
+<ul>
+  <li>get infos about the executable by running:</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>checksec <span class="nt">--file</span><span class="o">=</span>sp_going_deeper
+</code></pre></div></div>
+
+<p><img src="../assets/checksec.png" alt="Checksec" title="Checksec Result" /></p>
+
+<ul>
+  <li>by inspecting the result of checksec we can see that
+    <ol>
+      <li>the stack is not executable -&gt; NX enabled
+        <blockquote>
+          <p>NX stands for “non-executable.” It’s often enabled at the CPU level, so an operating system with NX enabled can mark certain areas of memory as non-executable. Often, buffer-overflow exploits put code on the stack and then try to execute it. However, making this writable area non-executable can prevent such attacks. This property is enabled by default during regular compilation using gcc: <sup><a href="#nx">1</a></sup></p>
+        </blockquote>
+      </li>
+      <li>Position Independant Executable (PIE) is disabled
+        <blockquote>
+          <p>Disabling PIE means that the program’s base address will always be the same at each execution</p>
+        </blockquote>
+      </li>
+    </ol>
+  </li>
+</ul>
+
+<h2 id="callflow">callflow</h2>
+
+<ol>
+  <li>main
+    <ol>
+      <li>setup</li>
+      <li>banner</li>
+      <li>admin_panel</li>
+    </ol>
+  </li>
+</ol>
+
+<h2 id="goal">goal</h2>
+
+<ul>
+  <li>the goal is to access this part of the <code class="language-plaintext highlighter-rouge">admin_panel</code> function which prints out the flag file</li>
+</ul>
+
+<p><img src="../assets/goal.png" alt="Goal function" title="goal function" /></p>
+
+<h2 id="requirements">requirements</h2>
+
+<ol>
+  <li>select option <code class="language-plaintext highlighter-rouge">1</code> or <code class="language-plaintext highlighter-rouge">2</code></li>
+  <li>input any <code class="language-plaintext highlighter-rouge">username</code>or <code class="language-plaintext highlighter-rouge">input</code> (depends on the previously selected option)</li>
+  <li>the following three screenshots are showing checks to validate if particular memory segments are equal to the hexvalues: <code class="language-plaintext highlighter-rouge">0xdeadbeef</code>, <code class="language-plaintext highlighter-rouge">0x1337c0de</code> and <code class="language-plaintext highlighter-rouge">0x1337beef</code></li>
+</ol>
+
+<p><img src="../assets/deadbeef.png" alt="deadbeef check" title="deadbeef" />
+<img src="../assets/1337c0de.png" alt="1337c0de check" title="1337c0de" />
+<img src="../assets/1337beef.png" alt="1337beef check" title="1337beef" /></p>
+
+<ol>
+  <li>finally this check has to be passed</li>
+</ol>
+
+<p><img src="../assets/string-cmp.png" alt="string compare" title="string compare" /></p>
+
+<h2 id="limitations">limitations</h2>
+
+<ul>
+  <li>we can’t pass the three checks because we can’t manipulate the given memory segments</li>
+  <li>through this we would never get to the intended section which prints out the flag file</li>
+</ul>
+
+<h2 id="idea">idea</h2>
+
+<ul>
+  <li>by overwriting the return address of the <code class="language-plaintext highlighter-rouge">admin_panel</code>function we can change the call flow</li>
+  <li>through this indeed all checks would fail but when the <code class="language-plaintext highlighter-rouge">admin_panel</code>function would return to the <code class="language-plaintext highlighter-rouge">main</code>function the overwritten return address would be loaded into the instruction pointer which would then be executed</li>
+</ul>
+
+<h2 id="solution">solution</h2>
+
+<ul>
+  <li>by injecting overflowing the <code class="language-plaintext highlighter-rouge">username</code>/<code class="language-plaintext highlighter-rouge">input</code> we can overwrite the return address</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="n">python3</span> <span class="o">-</span><span class="n">c</span> <span class="s">"print('1</span><span class="se">\n</span><span class="s">' + 'A' * 85 + '</span><span class="se">\x12\x0B\x40</span><span class="s">')"</span> <span class="o">|</span> <span class="p">.</span><span class="o">/</span><span class="n">sp_going_deeper</span>
+</code></pre></div></div>
+
+<ul>
+  <li>the command prints a <code class="language-plaintext highlighter-rouge">1</code>followed by a line break to select option <code class="language-plaintext highlighter-rouge">1</code>in the menu</li>
+  <li>subsequently it prints 85 <code class="language-plaintext highlighter-rouge">A</code>’s to reach the overflow followed by the address to be executed when returning to the <code class="language-plaintext highlighter-rouge">main</code> function</li>
+</ul>
+
+<blockquote>
+  <p>Note: the adress is in little-endian format which results in the following code address: <code class="language-plaintext highlighter-rouge">0x400B12</code>
+Note2: the string cannot contain <code class="language-plaintext highlighter-rouge">0x0A</code> since the input is null-terminated</p>
+</blockquote>
+
+<h1 id="sources">Sources</h1>
+<p><a name="nx">1</a>: <a href="https://opensource.com/article/21/6/linux-checksec">checksec</a></p>
+
+</article>
+      </section>
+    </div>
+  </div>
+
+   <footer>
+  <a href="https://creativecommons.org/licenses/by-nc/3.0/deed.en_US">
+    <span>
+        <b>Dennis</b>
+    </span>
+    
+    <span>© 2023</span>
+  </a>
+</footer>
+
+  
+</body>
+
+</html>
