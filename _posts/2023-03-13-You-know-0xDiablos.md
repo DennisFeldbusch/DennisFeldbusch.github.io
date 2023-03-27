@@ -9,7 +9,7 @@ tags: [htb ctf pwn bof buffer overflow stack little endian gdb radare2 r2]
 
 ## trying a large input to cause an overflow
 
-- by executing the binary with a large input delivers us a segmentation fault
+- By executing the binary with a large input delivers us a segmentation fault
 
 ```bash
 python2 -c "print 'A' * 300 " | ./vuln
