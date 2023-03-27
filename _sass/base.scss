@@ -151,11 +151,11 @@ blockquote {
 }
 
 pre {
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(40, 40, 40, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.15);
   padding: 10px;
   font-size: 16px;
-  color: #b5e853;
+  color: #98971a;
   border-radius: 2px;
   text-wrap: normal;
   overflow: auto;
@@ -163,11 +163,11 @@ pre {
 }
 
 code.highlighter-rouge {
-  background: rgba(0,0,0,0.9);
+  background: rgba(40,40,40,0.9);
   border: 1px solid rgba(255, 255, 255, 0.15);
   padding: 0px 3px;
   margin: 0px -3px;
-  color: #aa759f;
+  color: #b16286;
   border-radius: 2px;
 }
 
@@ -178,7 +178,7 @@ table {
 
 th {
   text-align: left;
-  border-bottom: 1px dashed #b5e853;
+  border-bottom: 1px dashed #98971a;
   padding: 5px 10px;
 }
 
@@ -189,8 +189,8 @@ td {
 hr {
   height: 0;
   border: 0;
-  border-bottom: 1px dashed #b5e853;
-  color: #b5e853;
+  border-bottom: 1px dashed #98971a;
+  color: #98971a;
 }
 
 /* Buttons
@@ -235,7 +235,7 @@ hr {
 */
 
 a {
-  color: #63c0f5;
+  color: #458588;
   text-shadow: 0 0 5px rgba(104, 182, 255, 0.5);
 }
 
