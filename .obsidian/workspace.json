@@ -4,19 +4,15 @@
     "type": "split",
     "children": [
       {
-        "id": "c597bd8d6051591b",
+        "id": "0c4487c29a33faa4",
         "type": "tabs",
         "children": [
           {
-            "id": "1bf412434b786f04",
+            "id": "a1f5d268817eae4d",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "_posts/2023-03-13-You-know-0xDiablos.md",
-                "mode": "source",
-                "source": false
-              }
+              "type": "empty",
+              "state": {}
             }
           }
         ]
@@ -85,7 +81,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "_posts/2023-03-13-You-know-0xDiablos.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +97,6 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "_posts/2023-03-13-You-know-0xDiablos.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -124,9 +118,7 @@
             "type": "leaf",
             "state": {
               "type": "outline",
-              "state": {
-                "file": "_posts/2023-03-13-You-know-0xDiablos.md"
-              }
+              "state": {}
             }
           }
         ]
@@ -147,23 +139,38 @@
       "remotely-save:Remotely Save": false
     }
   },
-  "active": "1bf412434b786f04",
+  "active": "a1f5d268817eae4d",
   "lastOpenFiles": [
+    "CNAME",
+    "_site/You-know-0xDiablos.html",
+    "_site/Space-pirate-Going-Deeper.html",
+    "_site/Lego-Car-Generator-CTF-Challenge.html",
+    "_site/Time.html",
+    "_site/Toxic.html",
+    "_site/AI.html",
+    "_site/Shoppy.html",
+    "_site/assets/youknow-file-existence.png",
+    "_site/assets/youknow-deadbeef-check.png",
+    "_site/assets/youknow-c0ded00d-check.png",
+    "_site/assets/string-cmp.png",
+    "_site/assets/goal.png",
+    "_site/assets/deadbeef.png",
+    "_site/assets/checksec.png",
+    "_site/assets/Toxic-Burp-Request.png",
+    "_site/assets/Shoppy-sql-attack.png",
+    "_site/assets/1337c0de.png",
+    "_site/page/4/index.html",
+    "_site/page/4",
+    "_site/page/3/index.html",
+    "_posts/2022-09-28-Ghoul.md",
+    "_posts/2022-09-06-Feline.md",
     "_posts/2023-03-12-Space-pirate-Going-Deeper.md",
     "_posts/2023-03-13-You-know-0xDiablos.md",
-    "assets/youknow-c0ded00d-check.png",
-    "assets/youknow-deadbeef-check.png",
-    "assets/youknow-file-existence.png",
-    "_posts/2022-09-28-Ghoul.md",
     "_template/Template.md",
     "references.md",
     "Untitled.md",
     "_posts/Untitled.md",
     "_posts/2022-12-07-Toxic.md",
-    "_template",
-    "_layouts/Untitled",
-    "assets/01-Modell-Erlenbruch-Dreieck-sw-2 1.jpeg",
-    "assets/01-Modell-Erlenbruch-Dreieck-sw-2.jpeg",
     "archive.md",
     "about.md",
     "404.md",
