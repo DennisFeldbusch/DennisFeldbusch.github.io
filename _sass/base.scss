@@ -141,7 +141,12 @@ dt {
 }
 
 ul li {
-  list-style-image:url('../assets/bullet.png');
+    list-style-image: url(../assets/bullet.png);
+}
+
+ul li:has(div) {
+    list-style-type: none;
+    list-style-image: unset;
 }
 
 blockquote {
@@ -279,4 +284,12 @@ a:active, a:focus {
     border-radius: 10px;
     font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
     padding: 0.5em;
+}
+
+.content-box {
+    border: 1px solid black;
+    border-radius: 50px;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.2);
+    margin-bottom: 50px;
 }
