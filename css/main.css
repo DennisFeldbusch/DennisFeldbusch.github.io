@@ -88,7 +88,9 @@ h1, h2, h3, h4, h5, h6 { font-weight: normal; font-family: Monaco, "Bitstream Ve
 
 dt { font-style: italic; font-weight: bold; }
 
-ul li { list-style-image: url("../assets/bullet.png"); }
+ul li { list-style-image: url(../assets/bullet.png); }
+
+ul li:has(div) { list-style-type: none; list-style-image: unset; }
 
 blockquote { color: #a89984; padding-left: 10px; border-left: 1px dotted #cc241d; }
 
@@ -132,5 +134,7 @@ a:active, a:focus { outline: 0; border: none; -moz-outline-style: none; }
 #wrapper { min-height: calc(100vh - 100px); }
 
 #search-input { background-color: #151515; color: #fbf1c7; border: 2px solid #98971a; border-radius: 10px; font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace; padding: 0.5em; }
+
+.content-box { border: 1px solid black; border-radius: 50px; padding: 20px; background-color: rgba(0, 0, 0, 0.2); margin-bottom: 50px; }
 
 /*# sourceMappingURL=main.css.map */

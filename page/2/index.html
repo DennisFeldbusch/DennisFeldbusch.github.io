@@ -69,21 +69,27 @@ SimpleJekyllSearch({
         <ul>
     
       <li>
+          <div class="content-box">
           <h2><a href="/Time">Time HackTheBox</a></h2>
           <time datetime="2023-01-09T00:00:00+00:00">09 Jan 2023</time>
           <p>Recon nmap -sC -sV 10.10.10.214 Nmap scan report for 10.10.10.214 Host is up (0.024s latency). Not shown: 998 closed ports PORT STATE SERVICE VERSION 22/tcp open ssh OpenSSH 8.2p1 Ubuntu 4ubuntu0.1 (Ubuntu Linux; protocol 2.0) 80/tcp open http Apache httpd 2.4.41 ((Ubuntu)) |_http-server-header: Apache/2.4.41 (Ubuntu) |_http-title: Online JSON parser Service...</p>
+          </div>
       </li>
     
       <li>
+          <div class="content-box">
           <h2><a href="/Toxic">Toxic HackTheBox Challenge</a></h2>
           <time datetime="2022-12-07T00:00:00+00:00">07 Dec 2022</time>
           <p>Toxic given a website with following code: &lt;?php spl_autoload_register(function ($name){ if (preg_match('/Model$/', $name)) { $name = "models/${name}"; } include_once "${name}.php"; }); if (empty($_COOKIE['PHPSESSID'])) { $page = new PageModel; $page-&gt;file = '/www/index.html'; setcookie( 'PHPSESSID', base64_encode(serialize($page)), time()+60*60*24, '/' ); } $cookie = base64_decode($_COOKIE['PHPSESSID']); unserialize($cookie); If no cookie is set it serializes the...</p>
+          </div>
       </li>
     
       <li>
+          <div class="content-box">
           <h2><a href="/Shoppy">Shoppy HackTheBox</a></h2>
           <time datetime="2022-09-29T00:00:00+00:00">29 Sep 2022</time>
           <p>recon # nmap -sC -sV -Ao nmap 10.10.11.180 # Nmap 7.92 scan initiated Thu Sep 29 08:59:36 2022 as: nmap -sC -sV -Ao nmap.again 10.10.11.180 Nmap scan report for 10.10.11.180 Host is up (0.019s latency). Not shown: 998 closed tcp ports (conn-refused) PORT STATE SERVICE VERSION 22/tcp open ssh OpenSSH...</p>
+          </div>
       </li>
     
 </ul>
